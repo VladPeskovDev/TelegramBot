@@ -1,13 +1,11 @@
 const express = require('express');
-const { User, UserStatistics } = require('../db/models'); // Модели базы данных
-const openai = require('../utils/openai'); 
+const { User, UserSubscription, UserModelRequest, GPTModel, Subscription } = require('../../db/models'); 
+const openai = require('../utils/openai');
 const openaiRouter = express.Router();
 require('dotenv').config();
 
-
-//router.post('/', async (req, res) => {
 openaiRouter.route('/').post(async (req, res) => {
-  const { chatId, userMessage } = req.body;
+  const { chatId, userMessage, modelName } = req.body;
 
   if (!userMessage) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
@@ -22,26 +20,58 @@ openaiRouter.route('/').post(async (req, res) => {
       });
     }
 
-    // Проверяем лимит запросов
-    const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-    const [stats] = await UserStatistics.findOrCreate({
-      where: { user_id: user.id, month: currentMonth },
-      defaults: { request_count: 0 },
+    // Проверяем активную подписку пользователя
+    const activeSubscription = await UserSubscription.findOne({
+      where: { user_id: user.id },
+      include: [{ model: Subscription, as: 'subscription' }],
+      order: [['end_date', 'DESC']], // Берём самую последнюю активную подписку
     });
 
-    if (stats.request_count >= user.subscription.requests_limit) {
+    if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
       return res.status(403).json({
-        error: 'Вы исчерпали лимит запросов на этот месяц. Пожалуйста, обновите подписку.',
+        error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
       });
     }
 
-    // Увеличиваем счетчик запросов
-    stats.request_count += 1;
-    await stats.save();
+    // Проверяем модель GPT
+    const gptModel = await GPTModel.findOne({ where: { name: modelName } });
+    if (!gptModel) {
+      return res.status(400).json({ error: 'Модель GPT не найдена.' });
+    }
 
-    // Отправляем запрос к OpenAI
+    // Проверяем лимит запросов для модели в рамках подписки
+    const userModelRequest = await UserModelRequest.findOne({
+      where: {
+        user_id: user.id,
+        subscription_id: activeSubscription.id,
+        model_id: gptModel.id,
+      },
+    });
+
+    const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
+
+    if (currentRequestCount >= gptModel.max_requests) {
+      return res.status(403).json({
+        error: `Вы исчерпали лимит запросов (${gptModel.max_requests}) для модели ${modelName}.`,
+      });
+    }
+
+    // Увеличиваем счётчик запросов
+    if (userModelRequest) {
+      userModelRequest.request_count += 1;
+      await userModelRequest.save();
+    } else {
+      await UserModelRequest.create({
+        user_id: user.id,
+        subscription_id: activeSubscription.id,
+        model_id: gptModel.id,
+        request_count: 1,
+      });
+    }
+
+    // Отправляем запрос в OpenAI
     const response = await openai.createCompletion({
-      model: 'gpt-4o-mini-2024-07-18', // Или другая модель
+      model: 'gpt-4o-mini-2024-07-18', 
       prompt: userMessage,
       max_tokens: 100,
       temperature: 0.7,
@@ -58,3 +88,7 @@ openaiRouter.route('/').post(async (req, res) => {
 });
 
 module.exports = openaiRouter;
+
+
+//model: 'gpt-4o-mini-2024-07-18', /
+//router.post('/', async (req, res) => {

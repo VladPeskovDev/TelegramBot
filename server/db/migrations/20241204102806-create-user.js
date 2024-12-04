@@ -10,16 +10,21 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       telegram_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        unique: true, 
+        allowNull: false
       },
       username: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       first_name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       last_name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       createdAt: {
         allowNull: false,
@@ -31,6 +36,7 @@ module.exports = {
       }
     });
   },
+  // eslint-disable-next-line no-unused-vars
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Users');
   }

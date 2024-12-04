@@ -10,13 +10,16 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false // Название подписки обязательно
       },
       requests_limit: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false // Лимит запросов обязателен
       },
       price: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2), // Указываем точность (10 знаков, из них 2 после запятой)
+        allowNull: false // Цена подписки обязательна
       },
       createdAt: {
         allowNull: false,
@@ -28,6 +31,7 @@ module.exports = {
       }
     });
   },
+  // eslint-disable-next-line no-unused-vars
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Subscriptions');
   }

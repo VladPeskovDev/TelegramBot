@@ -2,39 +2,35 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('UserSubscriptions', {
+    await queryInterface.createTable('SubscriptionModelLimits', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Users', // Связь с таблицей Users
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
-      },
       subscription_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Subscriptions', // Связь с таблицей Subscriptions
+          model: 'Subscriptions',
           key: 'id',
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
-      start_date: {
-        type: Sequelize.DATE,
+      model_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'GPTModels',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       },
-      end_date: {
-        type: Sequelize.DATE,
+      requests_limit: {
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       createdAt: {
@@ -49,6 +45,6 @@ module.exports = {
   },
   // eslint-disable-next-line no-unused-vars
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('UserSubscriptions');
+    await queryInterface.dropTable('SubscriptionModelLimits');
   },
 };

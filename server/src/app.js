@@ -6,6 +6,8 @@ const openaiRouter = require('./routes/openaiRouter');
 
 const app = express();
 
+//bot.startPolling();
+
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

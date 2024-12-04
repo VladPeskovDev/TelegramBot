@@ -1,37 +1,34 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Payment extends Model {
+  class SubscriptionModelLimit extends Model {
     static associate(models) {
-      // Связь с Users
-      this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
       // Связь с Subscriptions
       this.belongsTo(models.Subscription, { foreignKey: 'subscription_id', as: 'subscription' });
+
+      // Связь с GPTModels
+      this.belongsTo(models.GPTModel, { foreignKey: 'model_id', as: 'model' });
     }
   }
-  Payment.init(
+  SubscriptionModelLimit.init(
     {
-      user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       subscription_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      amount: {
-        type: DataTypes.DECIMAL,
+      model_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      payment_date: {
-        type: DataTypes.DATE,
+      requests_limit: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
     },
     {
       sequelize,
-      modelName: 'Payment',
+      modelName: 'SubscriptionModelLimit',
     }
   );
-  return Payment;
+  return SubscriptionModelLimit;
 };

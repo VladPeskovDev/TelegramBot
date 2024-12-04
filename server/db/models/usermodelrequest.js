@@ -1,26 +1,42 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class UserModelRequest extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      // Связь с Users
+      this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+
+      // Связь с UserSubscriptions
+      this.belongsTo(models.UserSubscription, { foreignKey: 'subscription_id', as: 'subscription' });
+
+      // Связь с GPTModels
+      this.belongsTo(models.GPTModel, { foreignKey: 'model_id', as: 'model' });
     }
   }
-  UserModelRequest.init({
-    user_id: DataTypes.INTEGER,
-    subscription_id: DataTypes.INTEGER,
-    model_id: DataTypes.INTEGER,
-    request_count: DataTypes.INTEGER
-  }, {
-    sequelize,
-    modelName: 'UserModelRequest',
-  });
+  UserModelRequest.init(
+    {
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      subscription_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      model_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      request_count: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0, // Счётчик запросов по умолчанию равен 0
+      },
+    },
+    {
+      sequelize,
+      modelName: 'UserModelRequest',
+    }
+  );
   return UserModelRequest;
 };
