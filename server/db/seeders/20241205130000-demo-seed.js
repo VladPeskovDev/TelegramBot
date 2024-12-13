@@ -41,7 +41,7 @@ module.exports = {
     await queryInterface.bulkInsert('UserSubscriptions', [
       {
         user_id: 1, // ID первого пользователя
-        subscription_id: 1, // ID подписки Free Plan
+        subscription_id: 2, // ID подписки Free Plan
         start_date: new Date(),
         end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)), // +1 месяц
         createdAt: new Date(),
@@ -64,7 +64,7 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        name: 'gpt-4o-mini-2024-07-18',
+        name: 'gpt-4o-mini',
         max_requests: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -76,7 +76,14 @@ module.exports = {
       {
         subscription_id: 1, // Free Plan
         model_id: 1, // GPT-3.5
-        requests_limit: 10,
+        requests_limit: 15,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 1, // Free Plan
+        model_id: 2, // gpt-4o
+        requests_limit: 15,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -90,28 +97,42 @@ module.exports = {
       {
         subscription_id: 2, // Basic Plan
         model_id: 1, // GPT-3.5
-        requests_limit: 50,
+        requests_limit: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 2, // Basic Plan
         model_id: 2, // GPT-4
-        requests_limit: 10,
+        requests_limit: 20,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 2, // Basic Plan
+        model_id: 3, // GPT-4o-mini
+        requests_limit: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 3, // Premium Plan
         model_id: 1, // GPT-3.5
-        requests_limit: 100,
+        requests_limit: 200,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 3, // Premium Plan
         model_id: 2, // GPT-4
-        requests_limit: 30,
+        requests_limit: 50,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 3, // Premium Plan
+        model_id: 2, // GPT-4o-mini
+        requests_limit: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
