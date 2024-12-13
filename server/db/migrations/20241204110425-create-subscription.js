@@ -13,10 +13,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false // Название подписки обязательно
       },
-      requests_limit: {
-        type: Sequelize.INTEGER,
-        allowNull: false // Лимит запросов обязателен
-      },
       price: {
         type: Sequelize.DECIMAL(10, 2), // Указываем точность (10 знаков, из них 2 после запятой)
         allowNull: false // Цена подписки обязательна

@@ -12,10 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false // Название подписки обязательно
     },
-    requests_limit: {
-      type: DataTypes.INTEGER,
-      allowNull: false // Лимит запросов обязателен
-    },
     price: {
       type: DataTypes.DECIMAL,
       allowNull: false // Цена подписки обязательна

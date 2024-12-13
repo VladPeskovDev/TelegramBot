@@ -83,15 +83,16 @@ bot.on('message', async (msg) => {
 
   try {
     // Отправляем сообщение на сервер для обработки
-    const response = await axios.post('http://localhost:3000/api/openai', {
+    const response = await axios.post('https://4793-5-228-83-19.ngrok-free.app/api/openai', {
       chatId,
       userMessage,
+      modelName: 'gpt-4o-mini-2024-07-18',
     });
 
     const botResponse = response.data.reply;
 
     // Отправляем ответ пользователю
-    bot.sendMessage(chatId, botResponse);
+    bot.sendMessage(chatId, botResponse, {pasre_mode: "MarkdownV2"});
   } catch (error) {
     console.error('Ошибка при обработке сообщения:', error);
 

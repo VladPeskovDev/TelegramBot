@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, UserSubscription, UserModelRequest, GPTModel, Subscription } = require('../../db/models'); 
+const { User, UserSubscription, UserModelRequest, GPTModel, Subscription, SubscriptionModelLimit } = require('../../db/models'); 
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
 require('dotenv').config();
@@ -39,7 +39,18 @@ openaiRouter.route('/').post(async (req, res) => {
       return res.status(400).json({ error: 'Модель GPT не найдена.' });
     }
 
-    // Проверяем лимит запросов для модели в рамках подписки
+    // Проверяем лимит запросов для данной подписки и модели
+    const subscriptionLimit = await SubscriptionModelLimit.findOne({
+      where: {
+        subscription_id: activeSubscription.subscription_id,
+        model_id: gptModel.id,
+      },
+    });
+
+    if (!subscriptionLimit) {
+      return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
+    }
+
     const userModelRequest = await UserModelRequest.findOne({
       where: {
         user_id: user.id,
@@ -50,9 +61,9 @@ openaiRouter.route('/').post(async (req, res) => {
 
     const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
 
-    if (currentRequestCount >= gptModel.max_requests) {
+    if (currentRequestCount >= subscriptionLimit.requests_limit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${gptModel.max_requests}) для модели ${modelName}.`,
+        error: `Вы исчерпали лимит запросов (${subscriptionLimit.requests_limit}) для модели ${modelName}.`,
       });
     }
 
@@ -70,14 +81,18 @@ openaiRouter.route('/').post(async (req, res) => {
     }
 
     // Отправляем запрос в OpenAI
-    const response = await openai.createCompletion({
-      model: 'gpt-4o-mini-2024-07-18', 
-      prompt: userMessage,
-      max_tokens: 100,
+    const response = await openai.chat.completions.create({
+      model: modelName,
+      messages: [{ role: 'user', content: userMessage }],
+      max_tokens: 500,
       temperature: 0.7,
     });
 
-    const botResponse = response.data.choices[0].text.trim();
+    let botResponse = response.choices[0].message.content.trim();
+
+    botResponse = botResponse.replace(/```[a-zA-Z]*\n([\s\S]*?)```/g, (match, code) => {
+      return `\`\`\`\n${code.trim()}\n\`\`\``;
+    }); 
 
     // Возвращаем ответ
     res.json({ reply: botResponse });
@@ -88,6 +103,7 @@ openaiRouter.route('/').post(async (req, res) => {
 });
 
 module.exports = openaiRouter;
+
 
 
 //model: 'gpt-4o-mini-2024-07-18', /
