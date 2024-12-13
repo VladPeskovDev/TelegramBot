@@ -81,6 +81,13 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
+        subscription_id: 1, // Free Plan
+        model_id: 3, // gpt-4o-mini-2024-07-18
+        requests_limit: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
         subscription_id: 2, // Basic Plan
         model_id: 1, // GPT-3.5
         requests_limit: 50,
