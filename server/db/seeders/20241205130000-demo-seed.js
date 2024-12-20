@@ -24,14 +24,20 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        name: 'Basic Plan',
-        price: 9.99,
+        name: 'Standart Plan',
+        price: 5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Standart Plus Plan',
+        price: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         name: 'Premium Plan',
-        price: 19.99,
+        price: 15,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -41,7 +47,7 @@ module.exports = {
     await queryInterface.bulkInsert('UserSubscriptions', [
       {
         user_id: 1, // ID первого пользователя
-        subscription_id: 2, // ID подписки Free Plan
+        subscription_id: 4, // ID подписки 
         start_date: new Date(),
         end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)), // +1 месяц
         createdAt: new Date(),
@@ -53,19 +59,16 @@ module.exports = {
     await queryInterface.bulkInsert('GPTModels', [
       {
         name: 'GPT-3.5',
-        max_requests: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         name: 'GPT-4',
-        max_requests: 20,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         name: 'gpt-4o-mini',
-        max_requests: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -83,7 +86,7 @@ module.exports = {
       {
         subscription_id: 1, // Free Plan
         model_id: 2, // gpt-4o
-        requests_limit: 15,
+        requests_limit: 3,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -95,42 +98,63 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        subscription_id: 2, // Basic Plan
+        subscription_id: 2, // Standart Plan
+        model_id: 1, // GPT-3.5
+        requests_limit: 50,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 2, 
+        model_id: 2, // GPT-4
+        requests_limit: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 2, 
+        model_id: 3, // GPT-4o-mini
+        requests_limit: 25,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 3, // Standart Plus Plan
         model_id: 1, // GPT-3.5
         requests_limit: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        subscription_id: 2, // Basic Plan
+        subscription_id: 3, 
         model_id: 2, // GPT-4
         requests_limit: 20,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        subscription_id: 2, // Basic Plan
-        model_id: 3, // GPT-4o-mini
+        subscription_id: 3,
+        model_id: 2, // GPT-4o-mini
         requests_limit: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        subscription_id: 3, // Premium Plan
+        subscription_id: 4, // Premium Plan
         model_id: 1, // GPT-3.5
-        requests_limit: 200,
+        requests_limit: 250,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        subscription_id: 3, // Premium Plan
+        subscription_id: 4, 
         model_id: 2, // GPT-4
         requests_limit: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        subscription_id: 3, // Premium Plan
+        subscription_id: 4,
         model_id: 2, // GPT-4o-mini
         requests_limit: 100,
         createdAt: new Date(),

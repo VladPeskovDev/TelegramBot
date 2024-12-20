@@ -83,7 +83,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName, 
       messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 500,
+      max_tokens: 1250,
       temperature: 0.7,
     });
 
@@ -187,7 +187,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName, 
       messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 500,
+      max_tokens: 1000,
       temperature: 0.7,
     });
 
@@ -289,7 +289,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName, 
       messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 500,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 

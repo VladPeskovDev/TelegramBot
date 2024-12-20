@@ -14,10 +14,6 @@ module.exports = {
         allowNull: false, // Название модели обязательно
         unique: true, // Название модели должно быть уникальным
       },
-      max_requests: {
-        type: Sequelize.INTEGER,
-        allowNull: false, // Максимальное количество запросов обязательно
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

@@ -13,10 +13,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false, // Название модели обязательно
       },
-      max_requests: {
-        type: DataTypes.INTEGER,
-        allowNull: false, // Максимальное количество запросов обязательно
-      },
     },
     {
       sequelize,
