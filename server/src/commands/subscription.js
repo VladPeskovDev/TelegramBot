@@ -6,7 +6,7 @@ const subscriptionDetails = {
       modelLimits: {
         'GPT-3.5': 50,
         'GPT-4o-mini': 25,
-        'GPT-4': 10,
+        'GPT-4o': 10,
       },
     },
     subscription_standard: {
@@ -16,7 +16,7 @@ const subscriptionDetails = {
       modelLimits: {
         'GPT-3.5': 100,
         'GPT-4o-mini': 50,
-        'GPT-4': 20,
+        'GPT-4o': 20,
       },
     },
     subscription_premium: {
@@ -26,7 +26,7 @@ const subscriptionDetails = {
       modelLimits: {
         'GPT-3.5': 250,
         'GPT-4o-mini': 100,
-        'GPT-4': 50,
+        'GPT-4o': 50,
       },
     },
   };
@@ -43,7 +43,7 @@ const subscriptionDetails = {
           ],
         },
       };
-      bot.sendMessage(chatId, 'Выберите подписку:', options);
+      bot.sendMessage(chatId, 'Выберите тарифный план:', options);
     });
   
     bot.on('callback_query', (callbackQuery) => {

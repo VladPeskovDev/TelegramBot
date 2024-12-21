@@ -166,7 +166,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
 
     if (currentRequestCount >= subscriptionLimit.requests_limit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${subscriptionLimit.requests_limit}) для модели ${modelName}.`,
+        error: `Вы исчерпали лимит запросов в количестве 3 штук для модели ${modelName}. Рекомендуем Вам приобрести подписку на 1 месяц. Для этого введите команду /subscription.`,
       });
     }
 

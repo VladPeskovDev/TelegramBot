@@ -13,7 +13,7 @@ module.exports = (bot) => {
         inline_keyboard: [
           [
             { text: '🤖 GPT-3.5', callback_data: 'GPT-3.5' },
-            { text: '🏅 GPT-4', callback_data: 'GPT-4' },
+            { text: '🧠 GPT-4o', callback_data: 'GPT-4o' },
             { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
           ],
         ],
@@ -34,7 +34,7 @@ module.exports = (bot) => {
       case 'GPT-3.5':
         endpoint = '/api/openai/model3.5';
         break;
-      case 'GPT-4':
+      case 'GPT-4o':
         endpoint = '/api/openai/model4';
         break;
       case 'gpt-4o-mini':

@@ -63,7 +63,7 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        name: 'GPT-4',
+        name: 'GPT-4о',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -155,7 +155,7 @@ module.exports = {
       },
       {
         subscription_id: 4,
-        model_id: 2, // GPT-4o-mini
+        model_id: 3, // GPT-4o-mini
         requests_limit: 100,
         createdAt: new Date(),
         updatedAt: new Date(),
