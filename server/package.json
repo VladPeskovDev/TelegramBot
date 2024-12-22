@@ -30,6 +30,7 @@
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
     "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.75.0",
     "pg": "^8.13.1",
