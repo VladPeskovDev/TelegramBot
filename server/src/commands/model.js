@@ -62,7 +62,19 @@ module.exports = (bot) => {
 
     const userModel = userModels[chatId] || { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
 
+    let processingMessageId;
+
     try {
+      // 🔄 Отправляем временное сообщение
+      const processingMessage = await bot.sendMessage(
+        chatId,
+        '⏳ *Обрабатываем ваш запрос, пожалуйста, подождите...*',
+        { parse_mode: 'Markdown' }
+      );
+
+      processingMessageId = processingMessage.message_id;
+
+      // ⏳ Запрашиваем ответ у OpenAI
       const response = await axios.post(userModel.endpoint, {
         chatId,
         userMessage,
@@ -71,12 +83,23 @@ module.exports = (bot) => {
 
       const botResponse = response.data.reply;
 
-      bot.sendMessage(chatId, botResponse);
+      // ✅ Удаляем временное сообщение
+      await bot.deleteMessage(chatId, processingMessageId);
+
+      // 📩 Отправляем окончательный ответ
+      bot.sendMessage(chatId, `🤖 *Ответ:* \n${botResponse}`, { parse_mode: 'Markdown' });
     } catch (error) {
-      console.error('Ошибка при обработке сообщения:', error);
+      console.error('❌ Ошибка при обработке сообщения:', error);
+
+      // ❗ Удаляем временное сообщение в случае ошибки
+      if (processingMessageId) {
+        await bot.deleteMessage(chatId, processingMessageId);
+      }
+
       const errorMessage =
-        error.response?.data?.error || 'Произошла ошибка. Пожалуйста, попробуйте позже.';
-      bot.sendMessage(chatId, errorMessage);
+        error.response?.data?.error || '❌ *Произошла ошибка. Попробуйте позже.*';
+
+      bot.sendMessage(chatId, errorMessage, { parse_mode: 'Markdown' });
     }
   });
 };

@@ -5,6 +5,7 @@ const bot = require('./bot');
 const openaiRouter = require('./routes/openaiRouter');
 const accountRouter = require('./routes/accountRouter');
 
+
 const app = express();
 
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use('/api/openai', openaiRouter);
 app.use('/api/account', accountRouter);
+
 
 
 // WebHook для Telegram

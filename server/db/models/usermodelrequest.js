@@ -3,13 +3,8 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class UserModelRequest extends Model {
     static associate(models) {
-      // Связь с Users
       this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
-
-      // Связь с UserSubscriptions
       this.belongsTo(models.UserSubscription, { foreignKey: 'subscription_id', as: 'subscription' });
-
-      // Связь с GPTModels
       this.belongsTo(models.GPTModel, { foreignKey: 'model_id', as: 'model' });
     }
   }
@@ -30,12 +25,18 @@ module.exports = (sequelize, DataTypes) => {
       request_count: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0, // Счётчик запросов по умолчанию равен 0
+        defaultValue: 0,
       },
     },
     {
       sequelize,
       modelName: 'UserModelRequest',
+      indexes: [
+        {
+          unique: true,
+          fields: ['user_id', 'subscription_id', 'model_id'], // Уникальный индекс
+        },
+      ],
     }
   );
   return UserModelRequest;
