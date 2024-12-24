@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const bot = require('./bot');
 const openaiRouter = require('./routes/openaiRouter');
 const accountRouter = require('./routes/accountRouter');
+const openaiO1Router = require('./routes/openaiO1Router');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
 
@@ -16,9 +17,10 @@ app.use(express.json());
 
 app.use('/api/openai', openaiRouter);
 app.use('/api/account', accountRouter);
+app.use('/api/openaiO1', openaiO1Router);
 
 
-cron.schedule('25 13 * * *', subscription);
+cron.schedule('56 18 * * *', subscription);
 console.log('🟢 Cron Job для подписок и лимитов активирован');
 
 

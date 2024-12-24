@@ -82,3 +82,7 @@ async function subscription() {
 }
 
 module.exports = { subscription };
+
+
+
+//обновляется только enddate надо обновлять также startdate и ставить время начала новой подписки на тот момент когда срабатыыает скрипт

@@ -13,13 +13,16 @@ module.exports = (bot) => {
         inline_keyboard: [
           [
             { text: '🤖 GPT-3.5', callback_data: 'GPT-3.5' },
-            { text: '🧠 GPT-4o', callback_data: 'GPT-4o' },
-            { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
+            { text: '🧠 GPT-4o', callback_data: 'GPT-4o' }
           ],
-        ],
-      },
+          [
+            { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
+            { text: '🆕 o1-mini-NEW', callback_data: 'o1-mini-NEW' }
+          ]
+        ]
+      }
     };
-
+    
     bot.sendMessage(chatId, 'Выберите модель:', options);
   });
 
@@ -39,6 +42,9 @@ module.exports = (bot) => {
         break;
       case 'gpt-4o-mini':
         endpoint = '/api/openai/model_gpt-4o-mini';
+        break;
+      case 'o1-mini-NEW':
+        endpoint = '/api/openaiO1/model_o1-mini-2024-09-12';
         break;
       default:
         bot.answerCallbackQuery(callbackQuery.id, { text: 'Неизвестная модель.' });

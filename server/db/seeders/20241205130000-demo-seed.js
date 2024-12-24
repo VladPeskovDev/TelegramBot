@@ -77,11 +77,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      {
-        name: 'dall-e-2',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
     ], {});
 
     // Данные для таблицы SubscriptionModelLimits
@@ -115,13 +110,6 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        subscription_id: 1, // Free Plan
-        model_id: 5, // dall-e-2
-        requests_limit: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
         subscription_id: 2, // Standart Plan
         model_id: 1, // GPT-3.5
         requests_limit: 50,
@@ -145,13 +133,6 @@ module.exports = {
       {
         subscription_id: 2, 
         model_id: 4, // o1-mini-2024-09-12
-        requests_limit: 3,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        subscription_id: 2,  
-        model_id: 5, // dall-e-2
         requests_limit: 3,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -185,13 +166,6 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        subscription_id: 3,  
-        model_id: 5, // dall-e-2
-        requests_limit: 5,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
         subscription_id: 4, // Premium Plan
         model_id: 1, // GPT-3.5
         requests_limit: 250,
@@ -216,13 +190,6 @@ module.exports = {
         subscription_id: 4, // Standart Plus Plan
         model_id: 4, // o1-mini-2024-09-12
         requests_limit: 25,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        subscription_id: 4,  
-        model_id: 5, // dall-e-2
-        requests_limit: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
