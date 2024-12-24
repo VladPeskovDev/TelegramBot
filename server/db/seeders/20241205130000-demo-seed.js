@@ -72,6 +72,16 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        name: 'o1-mini-2024-09-12',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'dall-e-2',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ], {});
 
     // Данные для таблицы SubscriptionModelLimits
@@ -79,21 +89,35 @@ module.exports = {
       {
         subscription_id: 1, // Free Plan
         model_id: 1, // GPT-3.5
-        requests_limit: 15,
+        requests_limit: 25,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 1, // Free Plan
         model_id: 2, // gpt-4o
-        requests_limit: 3,
+        requests_limit: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 1, // Free Plan
         model_id: 3, // gpt-4o-mini-2024-07-18
-        requests_limit: 10,
+        requests_limit: 15,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 1, // Free Plan
+        model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 1, // Free Plan
+        model_id: 5, // dall-e-2
+        requests_limit: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -107,14 +131,28 @@ module.exports = {
       {
         subscription_id: 2, 
         model_id: 2, // GPT-4
-        requests_limit: 10,
+        requests_limit: 20,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 2, 
         model_id: 3, // GPT-4o-mini
-        requests_limit: 25,
+        requests_limit: 50,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 2, 
+        model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 3,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 2,  
+        model_id: 5, // dall-e-2
+        requests_limit: 3,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -128,14 +166,28 @@ module.exports = {
       {
         subscription_id: 3, 
         model_id: 2, // GPT-4
-        requests_limit: 20,
+        requests_limit: 25,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         subscription_id: 3,
         model_id: 2, // GPT-4o-mini
-        requests_limit: 50,
+        requests_limit: 75,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 3, // Standart Plus Plan
+        model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 3,  
+        model_id: 5, // dall-e-2
+        requests_limit: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -157,6 +209,20 @@ module.exports = {
         subscription_id: 4,
         model_id: 3, // GPT-4o-mini
         requests_limit: 100,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 4, // Standart Plus Plan
+        model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 25,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 4,  
+        model_id: 5, // dall-e-2
+        requests_limit: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
