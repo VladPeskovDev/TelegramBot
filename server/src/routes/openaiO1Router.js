@@ -5,7 +5,6 @@ const openaiO1Router = express.Router();
 const cache = require('../utils/cache');
 require('dotenv').config();
 
-
 openaiO1Router.route('/model_o1-mini-2024-09-12').post(async (req, res) => {
     const { chatId, userMessage } = req.body;
   
@@ -15,13 +14,14 @@ openaiO1Router.route('/model_o1-mini-2024-09-12').post(async (req, res) => {
   
     const modelName = "o1-mini-2024-09-12";
     const cacheKey = `user_${chatId}_o1-mini-2024-09-12`;
+    const contextKey = `user_${chatId}_o1-mini-2024-09-12_context`;
   
     try {
       let userCache = cache.getCache(cacheKey);
+      let userContext = cache.getCache(contextKey) || [];
   
       if (!userCache) {
-        console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
-  
+        
         const user = await User.findOne({ where: { telegram_id: chatId } });
         if (!user) {
           return res.status(403).json({
@@ -61,9 +61,7 @@ openaiO1Router.route('/model_o1-mini-2024-09-12').post(async (req, res) => {
         };
   
         cache.setCache(cacheKey, userCache, 300); // Кэш на 5 минут
-      } else {
-        console.log('✅ Данные пользователя получены из кэша.');
-      }
+      } 
   
       // Проверка лимита запросов
       if (userCache.requestCount >= userCache.requestsLimit) {
@@ -77,34 +75,51 @@ openaiO1Router.route('/model_o1-mini-2024-09-12').post(async (req, res) => {
       cache.setCache(cacheKey, userCache, 300);
   
       // 🔄 Синхронизация каждые 5 запросов
-  if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
-    userCache.syncing = true;
-    console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
-    await UserModelRequest.upsert({
-      user_id: userCache.userId,
-      subscription_id: userCache.subscriptionId,
-      model_id: userCache.modelId,
-      request_count: userCache.requestCount,
-    }, {
-      where: {
-        user_id: userCache.userId,
-        subscription_id: userCache.subscriptionId,
-        model_id: userCache.modelId,
+      if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+        userCache.syncing = true;
+        await UserModelRequest.upsert({
+          user_id: userCache.userId,
+          subscription_id: userCache.subscriptionId,
+          model_id: userCache.modelId,
+          request_count: userCache.requestCount,
+        }, {
+          where: {
+            user_id: userCache.userId,
+            subscription_id: userCache.subscriptionId,
+            model_id: userCache.modelId,
+          }
+        });
+        userCache.syncing = false;
+        cache.setCache(cacheKey, userCache, 300);
       }
-    });
-    userCache.syncing = false;
-    cache.setCache(cacheKey, userCache, 300);
-  }
   
+      // 📦 Формирование контекста
+      userContext.push({ role: 'user', content: userMessage });
       
+      // Оставляем только последние 2 сообщения
+      if (userContext.length > 2) {
+        userContext = userContext.slice(-2);
+      }
+  
       // 📦 Запрос к OpenAI
       const response = await openai.chat.completions.create({
         model: modelName,
-        messages: [{ role: 'user', content: userMessage }],
+        messages: userContext,
         max_completion_tokens: 1500,
       });
   
       const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
+  
+      // Добавляем ответ бота в контекст
+      userContext.push({ role: 'assistant', content: botResponse });
+      
+      // Оставляем последние 2 сообщения
+      if (userContext.length > 2) {
+        userContext = userContext.slice(-2);
+      }
+  
+      // Сохраняем контекст в кэше
+      cache.setCache(contextKey, userContext, 300); // Кэш на 5 минут
   
       if (botResponse.length <= 5000) {
         cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300); // Кэшируем ответ
@@ -115,6 +130,6 @@ openaiO1Router.route('/model_o1-mini-2024-09-12').post(async (req, res) => {
       console.error('❌ Ошибка при обработке сообщения:', error.message);
       res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
     }
-  });
+});
   
-  module.exports = openaiO1Router;  
+module.exports = openaiO1Router;

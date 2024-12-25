@@ -8,6 +8,7 @@ const openaiO1Router = require('./routes/openaiO1Router');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
 
+
 const app = express();
 
 app.use(morgan('dev'));
@@ -21,7 +22,6 @@ app.use('/api/openaiO1', openaiO1Router);
 
 
 cron.schedule('56 18 * * *', subscription);
-console.log('🟢 Cron Job для подписок и лимитов активирован');
 
 
 

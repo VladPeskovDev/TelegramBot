@@ -15,13 +15,14 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
   const modelName = "gpt-4o-mini-2024-07-18";
   const cacheKey = `user_${chatId}_gpt-4o-mini`;
+  const contextKey = `user_${chatId}_gpt-4o-mini_context`;
 
   try {
     let userCache = cache.getCache(cacheKey);
+    let userContext = cache.getCache(contextKey) || [];
 
     if (!userCache) {
-      console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
-
+      
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -61,54 +62,57 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       };
 
       cache.setCache(cacheKey, userCache, 300); // Кэш на 5 минут
-    } else {
-      console.log('✅ Данные пользователя получены из кэша.');
     }
 
-    // Проверка лимита запросов
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`,
       });
     }
 
-    // Увеличиваем счётчик в кэше
     userCache.requestCount += 1;
     cache.setCache(cacheKey, userCache, 300);
 
-    // 🔄 Синхронизация каждые 5 запросов
-if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
-  userCache.syncing = true;
-  console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
-  await UserModelRequest.upsert({
-    user_id: userCache.userId,
-    subscription_id: userCache.subscriptionId,
-    model_id: userCache.modelId,
-    request_count: userCache.requestCount,
-  }, {
-    where: {
-      user_id: userCache.userId,
-      subscription_id: userCache.subscriptionId,
-      model_id: userCache.modelId,
+    if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+      userCache.syncing = true;
+      await UserModelRequest.upsert({
+        user_id: userCache.userId,
+        subscription_id: userCache.subscriptionId,
+        model_id: userCache.modelId,
+        request_count: userCache.requestCount,
+      }, {
+        where: {
+          user_id: userCache.userId,
+          subscription_id: userCache.subscriptionId,
+          model_id: userCache.modelId,
+        }
+      });
+      userCache.syncing = false;
+      cache.setCache(cacheKey, userCache, 300);
     }
-  });
-  userCache.syncing = false;
-  cache.setCache(cacheKey, userCache, 300);
-}
 
-    
-    // 📦 Запрос к OpenAI
+    userContext.push({ role: 'user', content: userMessage });
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+
     const response = await openai.chat.completions.create({
       model: modelName,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: userContext,
       max_tokens: 1250,
       temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
+    userContext.push({ role: 'assistant', content: botResponse });
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+    cache.setCache(contextKey, userContext, 300);
+
     if (botResponse.length <= 5000) {
-      cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300); // Кэшируем ответ
+      cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300);
     }
 
     res.json({ reply: botResponse });
@@ -129,14 +133,17 @@ openaiRouter.route('/model4').post(async (req, res) => {
 
   const modelName = "gpt-4o-2024-05-13";
   const cacheKey = `user_${chatId}_model4`;
+  const contextKey = `user_${chatId}_model4_context`;
 
   try {
+    // 🔄 Получаем данные пользователя из кэша
     let userCache = cache.getCache(cacheKey);
+    let userContext = cache.getCache(contextKey) || [];
 
     if (!userCache) {
       console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
 
-      // Запрашиваем пользователя
+      // 🧑‍💻 Запрашиваем пользователя
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -144,7 +151,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
         });
       }
 
-      // Проверяем подписку
+      // 📅 Проверяем подписку
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
@@ -157,29 +164,23 @@ openaiRouter.route('/model4').post(async (req, res) => {
         });
       }
 
-      // Проверяем лимиты
+      // 📊 Проверяем лимиты
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
-        where: {
-          subscription_id: activeSubscription.subscription_id,
-          model_id: 2,
-        },
+        where: { subscription_id: activeSubscription.subscription_id, model_id: 2 },
       });
 
       if (!subscriptionLimit) {
         return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
       }
 
-      // Проверяем счётчик
+      // 📈 Проверяем счётчик запросов
       const userModelRequest = await UserModelRequest.findOne({
-        where: {
-          user_id: user.id,
-          subscription_id: activeSubscription.id,
-          model_id: 2,
-        },
+        where: { user_id: user.id, subscription_id: activeSubscription.id, model_id: 2 },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
 
+      // 🗂️ Сохраняем в кэш
       userCache = {
         userId: user.id,
         subscriptionId: activeSubscription.id,
@@ -194,47 +195,67 @@ openaiRouter.route('/model4').post(async (req, res) => {
       console.log('✅ Данные пользователя получены из кэша.');
     }
 
-    // Проверяем лимиты
+    // 🚨 Проверка лимита запросов
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`,
       });
     }
 
-    // Увеличиваем счётчик в кэше
+    // 🧮 Увеличиваем счётчик запросов
     userCache.requestCount += 1;
     cache.setCache(cacheKey, userCache, 300);
 
     // 🔄 Синхронизация каждые 5 запросов
-if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
-  userCache.syncing = true;
-  console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
-  await UserModelRequest.upsert({
-    user_id: userCache.userId,
-    subscription_id: userCache.subscriptionId,
-    model_id: userCache.modelId,
-    request_count: userCache.requestCount,
-  }, {
-    where: {
-      user_id: userCache.userId,
-      subscription_id: userCache.subscriptionId,
-      model_id: userCache.modelId,
+    if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+      userCache.syncing = true;
+      console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
+      await UserModelRequest.upsert({
+        user_id: userCache.userId,
+        subscription_id: userCache.subscriptionId,
+        model_id: userCache.modelId,
+        request_count: userCache.requestCount,
+      }, {
+        where: {
+          user_id: userCache.userId,
+          subscription_id: userCache.subscriptionId,
+          model_id: userCache.modelId,
+        }
+      });
+      userCache.syncing = false;
+      cache.setCache(cacheKey, userCache, 300);
     }
-  });
-  userCache.syncing = false;
-  cache.setCache(cacheKey, userCache, 300);
-}
 
-    // 📦 Запрос к OpenAI
+    // 💬 Сохраняем сообщение пользователя в контекст
+    userContext.push({ role: 'user', content: userMessage });
+
+    // Ограничиваем длину контекста (только последние 2 сообщения)
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+
+    // 📦 Запрос к OpenAI с контекстом
     const response = await openai.chat.completions.create({
       model: modelName,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: userContext,
       max_tokens: 1000,
       temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
+    // 💬 Добавляем ответ ассистента в контекст
+    userContext.push({ role: 'assistant', content: botResponse });
+
+    // Ограничиваем длину контекста (только последние 2 сообщения)
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+
+    // Сохраняем контекст в кэш
+    cache.setCache(contextKey, userContext, 300);
+
+    // 🗂️ Кэшируем последний ответ отдельно
     if (botResponse.length <= 5000) {
       cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300);
     }
@@ -245,7 +266,6 @@ if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
-
 
 //------------------>следующий endpoint<----------------
 
@@ -384,23 +404,23 @@ module.exports = openaiRouter;
 
 
 /*    
-openaiRouter.route('/model3.5').post(async (req, res) => {
+openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = "gpt-3.5-turbo";
-  const cacheKey = `user_${chatId}_model3.5`;
+  const modelName = "gpt-4o-mini-2024-07-18";
+  const cacheKey = `user_${chatId}_gpt-4o-mini`;
+  const contextKey = `user_${chatId}_gpt-4o-mini_context`;
 
   try {
     let userCache = cache.getCache(cacheKey);
+    let userContext = cache.getCache(contextKey) || [];
 
     if (!userCache) {
-      console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
-
-      // Запрашиваем пользователя
+      
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -408,7 +428,6 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
-      // Проверяем подписку
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
@@ -421,25 +440,12 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
-      // Проверяем лимиты
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
-        where: {
-          subscription_id: activeSubscription.subscription_id,
-          model_id: 1,
-        },
+        where: { subscription_id: activeSubscription.subscription_id, model_id: 3 },
       });
 
-      if (!subscriptionLimit) {
-        return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
-      }
-
-      // Проверяем счётчик
       const userModelRequest = await UserModelRequest.findOne({
-        where: {
-          user_id: user.id,
-          subscription_id: activeSubscription.id,
-          model_id: 1,
-        },
+        where: { user_id: user.id, subscription_id: activeSubscription.id, model_id: 3 },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
@@ -447,51 +453,61 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       userCache = {
         userId: user.id,
         subscriptionId: activeSubscription.id,
-        modelId: 1,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
+        modelId: 3,
       };
 
       cache.setCache(cacheKey, userCache, 300); // Кэш на 5 минут
-    } else {
-      console.log('✅ Данные пользователя получены из кэша.');
     }
 
-    // Проверяем лимиты
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`,
       });
     }
 
-    // Увеличиваем счётчик в кэше
     userCache.requestCount += 1;
     cache.setCache(cacheKey, userCache, 300);
 
-    // 🔄 Синхронизация каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
       await UserModelRequest.upsert({
         user_id: userCache.userId,
         subscription_id: userCache.subscriptionId,
-        model_id: 1,
+        model_id: userCache.modelId,
         request_count: userCache.requestCount,
+      }, {
+        where: {
+          user_id: userCache.userId,
+          subscription_id: userCache.subscriptionId,
+          model_id: userCache.modelId,
+        }
       });
       userCache.syncing = false;
       cache.setCache(cacheKey, userCache, 300);
     }
 
-    // 📦 Запрос к OpenAI
+    userContext.push({ role: 'user', content: userMessage });
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+
     const response = await openai.chat.completions.create({
       model: modelName,
-      messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 1000,
+      messages: userContext,
+      max_tokens: 1250,
       temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
+
+    userContext.push({ role: 'assistant', content: botResponse });
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
+    }
+    cache.setCache(contextKey, userContext, 300);
 
     if (botResponse.length <= 5000) {
       cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300);
@@ -503,6 +519,5 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
-
 
 */

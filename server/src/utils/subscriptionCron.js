@@ -1,18 +1,23 @@
 const { UserSubscription, UserModelRequest } = require('../../db/models');
 const { Op } = require('sequelize');
 
-
 async function subscription() {
   console.log('🕒 [CRON JOB] Запуск обновления подписок и лимитов...');
 
   try {
-    // 1️⃣ Обновляем бесплатные подписки (продлеваем лимиты на месяц)
+    const now = new Date(); // Текущее время
+    const nextMonth = new Date(new Date().setMonth(now.getMonth() + 1)); // Текущая дата + 1 месяц
+
+    // 1️⃣ Обновляем бесплатные подписки (продлеваем лимиты на месяц, обновляем start_date)
     const updatedFreeSubscriptions = await UserSubscription.update(
-      { end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)) },
+      {
+        start_date: now,
+        end_date: nextMonth
+      },
       {
         where: {
-          subscription_id: 1, 
-          end_date: { [Op.lte]: new Date() }
+          subscription_id: 1, // Бесплатная подписка
+          end_date: { [Op.lte]: now }
         }
       }
     );
@@ -28,8 +33,8 @@ async function subscription() {
               await UserSubscription.findAll({
                 attributes: ['user_id'],
                 where: {
-                  subscription_id: 1, // ID бесплатной подписки
-                  end_date: { [Op.lte]: new Date() }
+                  subscription_id: 1,
+                  end_date: { [Op.lte]: now }
                 }
               })
             ).map((sub) => sub.user_id)
@@ -39,16 +44,17 @@ async function subscription() {
     );
     console.log(`✅ Лимиты для бесплатных подписок сброшены: ${resetFreeLimits[0]} записей`);
 
-    // 3️⃣ Переключаем истекшие платные подписки на бесплатные
+    // 3️⃣ Переключаем истекшие платные подписки на бесплатные (обновляем start_date и end_date)
     const downgradedSubscriptions = await UserSubscription.update(
       {
         subscription_id: 1, // ID бесплатной подписки
-        end_date: new Date(new Date().setMonth(new Date().getMonth() + 1))
+        start_date: now,
+        end_date: nextMonth
       },
       {
         where: {
-          subscription_id: { [Op.ne]: 1 }, // Не бесплатная подписка
-          end_date: { [Op.lte]: new Date() }
+          subscription_id: { [Op.ne]: 1 }, // Исключаем бесплатную подписку
+          end_date: { [Op.lte]: now }
         }
       }
     );
@@ -64,8 +70,8 @@ async function subscription() {
               await UserSubscription.findAll({
                 attributes: ['user_id'],
                 where: {
-                  subscription_id: 1, // ID бесплатной подписки
-                  end_date: { [Op.gte]: new Date() }
+                  subscription_id: 1,
+                  end_date: { [Op.gte]: now }
                 }
               })
             ).map((sub) => sub.user_id)
@@ -83,6 +89,3 @@ async function subscription() {
 
 module.exports = { subscription };
 
-
-
-//обновляется только enddate надо обновлять также startdate и ставить время начала новой подписки на тот момент когда срабатыыает скрипт

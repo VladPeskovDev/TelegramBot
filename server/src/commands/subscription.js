@@ -2,31 +2,34 @@ const subscriptionDetails = {
     subscription_free: {
       name: 'Standart Plan',
       price: '5$',
-      details: 'Возможность пользоваться любыми моделями GPT',
+      details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW 🚀',
       modelLimits: {
         'GPT-3.5': 50,
-        'GPT-4o-mini': 25,
-        'GPT-4o': 10,
+        'GPT-4o-mini': 50,
+        'GPT-4o': 20,
+        'GPT-o1-mini-NEW': 3,
       },
     },
     subscription_standard: {
       name: 'Standard Plus Plan',
       price: '10$',
-      details: 'Возможность пользоваться любыми моделями GPT',
+      details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW с еще большим количесвтом запросов 🚀',
       modelLimits: {
         'GPT-3.5': 100,
-        'GPT-4o-mini': 50,
-        'GPT-4o': 20,
+        'GPT-4o-mini': 75,
+        'GPT-4o': 25,
+        'GPT-o1-mini-NEW': 10,
       },
     },
     subscription_premium: {
       name: 'Premium Plan',
       price: '25$',
-      details: 'Возможность пользоваться любыми моделями GPT',
+      details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW с еще большим количесвтом запросов 🚀',
       modelLimits: {
         'GPT-3.5': 250,
         'GPT-4o-mini': 100,
         'GPT-4o': 50,
+        'GPT-o1-mini-NEW': 25,
       },
     },
   };
@@ -61,7 +64,7 @@ const subscriptionDetails = {
   Вы выбрали: ${subscription.name}\n
   Цена: ${subscription.price}\n
   Детали: ${subscription.details}\n
-  Лимиты:\n${Object.entries(subscription.modelLimits)
+  Лимиты по моделям:\n${Object.entries(subscription.modelLimits)
           .map(([model, limit]) => `- ${model}: ${limit}`)
           .join('\n')}
         `;
