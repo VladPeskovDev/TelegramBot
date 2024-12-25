@@ -8,6 +8,6 @@ const handleFeedbackCommand = (bot) => {
     });
   };
   
-  // Экспортируйте функцию или объект в зависимости от потребностей
+  
   module.exports = { handleFeedbackCommand };
   

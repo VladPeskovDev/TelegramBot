@@ -7,6 +7,7 @@ const setupSubscriptionCommand = require('./commands/subscription');
 const setupAccountCommand = require('./commands/account');
 const setupModelCommand = require('./commands/model');
 const { handleFeedbackCommand } = require('./commands/feedback');
+const { handleResetCommand } = require('./commands/reset');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: true });
 
@@ -25,6 +26,7 @@ bot.setMyCommands([
   { command: '/account', description: '👤 Получить информацию о вашем аккаунте' },
   { command: '/model', description: '🛠 Выбрать модель' },
   { command: '/feedback', description: '✉️ Связаться с нами' },
+  { command: '/reset', description: '🗑️ Сбросить контекст диалога' },
 ]);
 
 // Подключаем команды
@@ -35,6 +37,7 @@ setupSubscriptionCommand(bot);
 setupAccountCommand(bot);
 setupModelCommand(bot);
 handleFeedbackCommand(bot);
+handleResetCommand(bot);
 
 console.log('Бот настроен для работы с WebHook.');
 

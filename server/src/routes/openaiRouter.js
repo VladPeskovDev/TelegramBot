@@ -46,6 +46,10 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         where: { subscription_id: activeSubscription.subscription_id, model_id: 3 },
       });
 
+      if (!subscriptionLimit) {
+        return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
+      }
+
       const userModelRequest = await UserModelRequest.findOne({
         where: { user_id: user.id, subscription_id: activeSubscription.id, model_id: 3 },
       });
@@ -92,8 +96,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     }
 
     userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
     }
 
     const response = await openai.chat.completions.create({
@@ -106,8 +110,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
     }
     cache.setCache(contextKey, userContext, 300);
 
@@ -230,8 +234,8 @@ openaiRouter.route('/model4').post(async (req, res) => {
     userContext.push({ role: 'user', content: userMessage });
 
     // Ограничиваем длину контекста (только последние 2 сообщения)
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
     }
 
     // 📦 Запрос к OpenAI с контекстом
@@ -278,9 +282,11 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
   const modelName = "gpt-3.5-turbo";
   const cacheKey = `user_${chatId}_model3.5`;
+  const contextKey = `user_${chatId}_model3.5_context`;
 
   try {
     let userCache = cache.getCache(cacheKey);
+    let userContext = cache.getCache(contextKey) || [];
 
     if (!userCache) {
       console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
@@ -355,30 +361,44 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     cache.setCache(cacheKey, userCache, 300);
 
     // 🔄 Синхронизация каждые 5 запросов
-if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
-  userCache.syncing = true;
-  console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
-  await UserModelRequest.upsert({
-    user_id: userCache.userId,
-    subscription_id: userCache.subscriptionId,
-    model_id: userCache.modelId,
-    request_count: userCache.requestCount,
-  }, {
-    conflictFields: ['user_id', 'subscription_id', 'model_id'],
-  });
-  userCache.syncing = false;
-  cache.setCache(cacheKey, userCache, 300);
-}
+    if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+      userCache.syncing = true;
+      await UserModelRequest.upsert({
+        user_id: userCache.userId,
+        subscription_id: userCache.subscriptionId,
+        model_id: userCache.modelId,
+        request_count: userCache.requestCount,
+      }, {
+        where: {
+          user_id: userCache.userId,
+          subscription_id: userCache.subscriptionId,
+          model_id: userCache.modelId,
+        }
+      });
+      userCache.syncing = false;
+      cache.setCache(cacheKey, userCache, 300);
+    }
+
+    userContext.push({ role: 'user', content: userMessage });
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
+    }
 
     // 📦 Запрос к OpenAI
     const response = await openai.chat.completions.create({
       model: modelName,
-      messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 1000,
+      messages: userContext,
+      max_tokens: 1250,
       temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
+
+    userContext.push({ role: 'assistant', content: botResponse });
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
+    }
+    cache.setCache(contextKey, userContext, 300);
 
     if (botResponse.length <= 5000) {
       cache.setCache(`response_${chatId}_${userMessage}`, botResponse, 300);
