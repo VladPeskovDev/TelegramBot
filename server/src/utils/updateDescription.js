@@ -1,3 +1,5 @@
+ //обновление количества подписчиков   
+
 const { UserModelRequest } = require('../../db/models');
 const { Op } = require('sequelize');
 const bot = require('../bot'); 
@@ -42,3 +44,6 @@ cron.schedule('0 3 * * *', async () => {
     console.log('🔄 [CRON] Запуск обновления описания бота...');
     await updateBotDescription();
   }); */
+
+
+ 
