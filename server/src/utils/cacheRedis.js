@@ -1,15 +1,12 @@
 const Redis = require('ioredis');
 const { UserModelRequest } = require('../../db/models');
 
-/**
- * Создаем основной клиент Redis
- * (Используется для set/get/...) в коде
- */
+
 const redis = new Redis({
-  host: '127.0.0.1', // Локальный Redis
+  host: '127.0.0.1', 
   port: 6379,
-  password: '0707',  // Пароль Redis
-  db: 0,             // Номер базы (по умолчанию 0)
+  password: '0707',  
+  db: 0,             
   showFriendlyErrorStack: true,
 });
 
@@ -155,17 +152,13 @@ async function subscribeToExpirations() {
 
     // Когда ключ истёк
     sub.on('message', async (channel, expiredKey) => {
-      console.log(`[DEBUG] [cacheRedis] Событие expired: ключ="${expiredKey}"`);
+      //console.log(`[DEBUG] [cacheRedis] Событие expired: ключ="${expiredKey}"`);
 
       // 1) Если это триггер-ключ
       if (expiredKey.startsWith('trigger_')) {
         const chatIdPart = expiredKey.replace('trigger_', '');
-        // У нас в endpoint-е формируется mainKey = user_{chatId}_о1-mini-...
-        // но вы можете упростить и хранить user_{chatId} без уточнений. 
-        // Тогда нужно аккуратно вычислить, какой именно mainKey искать.
-        // Для примера: 
-        //  trigger_96800740_o1-mini-2024-09-12 -> user_96800740_o1-mini-2024-09-12
         const mainKey = `user_${chatIdPart}`;
+
         console.log(`[DEBUG] [cacheRedis] Триггер истёк. Попробуем прочитать ${mainKey}...`);
 
         const mainVal = await redis.get(mainKey);
@@ -219,7 +212,6 @@ async function subscribeToExpirations() {
 })();
 
 module.exports = {
-  // Методы для чтения/записи
   getCache,
   setCache,
   delCache,
