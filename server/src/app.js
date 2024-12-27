@@ -1,5 +1,4 @@
 const express = require('express');
-//const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const bot = require('./bot');
 const openaiRouter = require('./routes/openaiRouter');
@@ -13,11 +12,10 @@ const logger = require('./utils/logger');
 const app = express();
 
 app.use(logger);
-
 app.use(morgan('dev'));
-//app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 
 app.use('/api/openai', openaiRouter);
 app.use('/api/account', accountRouter);
@@ -28,11 +26,11 @@ app.use('/api', systemRouter);
 cron.schedule('56 18 * * *', subscription);
 
 
-
 // WebHook 
 app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body); 
     res.sendStatus(200); 
   });
 
+  
 module.exports = app;

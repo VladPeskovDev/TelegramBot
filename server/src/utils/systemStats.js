@@ -1,6 +1,5 @@
 const os = require('os');
 
-// Функция для сбора статистики системы
 const getSystemStats = () => ({
     freeMemory: os.freemem(),
     totalMemory: os.totalmem(),
