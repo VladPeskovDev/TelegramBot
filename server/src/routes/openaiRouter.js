@@ -138,9 +138,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       userContext = userContext.slice(-4);
     }
 
-    // Теперь СОХРАНЯЕМ два ключа:
-    // - Основной ключ (TTL=300)
-    // - Триггер-ключ (TTL=298)
     await cache.setCache(mainKey, userCache, 300);  
     await cache.setCache(triggerKey, '1', 298);     
 
