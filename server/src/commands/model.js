@@ -58,54 +58,85 @@ module.exports = (bot) => {
   });
 
   // Обработка текстовых сообщений
-  bot.on('message', async (msg) => {
-    const chatId = String(msg.chat.id);
-    const userMessage = msg.text;
+bot.on('message', async (msg) => {
+  const chatId = String(msg.chat.id);
+  const userMessage = msg.text;
 
-    if (!userMessage || userMessage.startsWith('/')) {
-      return;
-    }
+  if (!userMessage || userMessage.startsWith('/')) {
+    return;
+  }
 
-    const userModel = userModels[chatId] || { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
+  const userModel = userModels[chatId] || { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
 
-    let processingMessageId;
+  let processingMessageId;
+
+  try {
+    // 🔄 Отправляем временное сообщение
+    const processingMessage = await bot.sendMessage(
+      chatId,
+      '⏳ *Обрабатываем ваш запрос, пожалуйста, подождите...*',
+      { parse_mode: 'Markdown' }
+    );
+
+    processingMessageId = processingMessage.message_id;
+
+    // ⏳ Запрашиваем ответ у OpenAI
+    const response = await axios.post(userModel.endpoint, {
+      chatId,
+      userMessage,
+      modelName: userModel.modelName,
+    });
+
+    const botResponse = response.data.reply;
 
     try {
-      // 🔄 Отправляем временное сообщение
-      const processingMessage = await bot.sendMessage(
+      await bot.deleteMessage(chatId, processingMessageId);
+    } catch (err) {
+      console.warn('⚠️ Не удалось удалить временное сообщение:', err.message);
+    }
+    
+    if (botResponse.length <= 4000) {
+      bot.sendMessage(
         chatId,
-        '⏳ *Обрабатываем ваш запрос, пожалуйста, подождите...*',
+        `🤖 *Ответ:* \n${botResponse}`,
         { parse_mode: 'Markdown' }
       );
+    } else {
+      // Ответ длинный — отправляем в виде txt-файла
+      const buffer = Buffer.from(botResponse, 'utf8'); 
 
-      processingMessageId = processingMessage.message_id;
-
-      // ⏳ Запрашиваем ответ у OpenAI
-      const response = await axios.post(userModel.endpoint, {
-        chatId,
-        userMessage,
-        modelName: userModel.modelName,
-      });
-
-      const botResponse = response.data.reply;
-
-      // ✅ Удаляем временное сообщение
+      try {
       await bot.deleteMessage(chatId, processingMessageId);
+          } catch (err) {
+         console.warn('(catch) Не удалось удалить временное сообщение:', err.message);
+         }
 
-      // 📩 Отправляем окончательный ответ
-      bot.sendMessage(chatId, `🤖 *Ответ:* \n${botResponse}`, { parse_mode: 'Markdown' });
-    } catch (error) {
-      console.error('❌ Ошибка при обработке сообщения:', error);
+        // Отправляем документ (txt)
+       await bot.sendDocument(
+       chatId,
+       buffer,                          
+      { caption: 'Ответ слишком большой, поэтому во вложении:', parse_mode: 'Markdown' },  
+      { filename: 'reply.txt', contentType: 'text/plain' }      
+      );
 
-      // ❗ Удаляем временное сообщение в случае ошибки
-      if (processingMessageId) {
-        await bot.deleteMessage(chatId, processingMessageId);
-      }
-
-      const errorMessage =
-        error.response?.data?.error || '❌ *Произошла ошибка. Попробуйте позже.*';
-
-      bot.sendMessage(chatId, errorMessage, { parse_mode: 'Markdown' });
     }
-  });
+  } catch (error) {
+    console.error('❌ Ошибка при обработке сообщения:', error);
+
+   
+  // ❗ Удаляем временное сообщение в случае ошибки
+  if (processingMessageId) {
+    try {
+      await bot.deleteMessage(chatId, processingMessageId);
+    } catch (delErr) {
+      console.warn('⚠️ (catch) Не удалось удалить временное сообщение:', delErr.message);
+    }
+  }
+
+    const errorMessage =
+      error.response?.data?.error || '❌ *Произошла ошибка. Попробуйте позже.*';
+
+    bot.sendMessage(chatId, errorMessage, { parse_mode: 'Markdown' });
+  }
+});
 };

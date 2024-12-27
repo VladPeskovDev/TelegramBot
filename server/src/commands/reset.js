@@ -1,4 +1,4 @@
-const cache = require('../utils/cache');
+const cache = require('../utils/cacheRedis');
 
 const handleResetCommand = (bot) => {
   bot.onText(/\/reset/, async (msg) => {
@@ -9,17 +9,22 @@ const handleResetCommand = (bot) => {
       const contextKeys = [
         `user_${chatId}_o1-mini-2024-09-12_context`,
         `user_${chatId}_gpt-4o-mini_context`,
-        `user_${chatId}_model4_context`
+        `user_${chatId}_model4_context`,
+        `user_${chatId}_model3.5_context`
+
       ];
 
       let clearedContexts = 0;
 
-      contextKeys.forEach((key) => {
-        if (cache.getCache(key)) {
-          cache.delCache(key);
+      for (const key of contextKeys) {
+        // 1) Асинхронно получаем данные
+        const existing = await cache.getCache(key);
+        // 2) Если есть, удаляем
+        if (existing) {
+          await cache.delCache(key); // Тоже асинхронно
           clearedContexts++;
         }
-      });
+      }
 
       if (clearedContexts > 0) {
         bot.sendMessage(
@@ -46,3 +51,4 @@ const handleResetCommand = (bot) => {
 };
 
 module.exports = { handleResetCommand };
+
