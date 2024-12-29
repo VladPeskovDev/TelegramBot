@@ -6,9 +6,9 @@ const cache = require('../utils/cacheRedis');
 require('dotenv').config();
 
 /* 
-  ===============================
+  ================================
    1) ЭНДПОИНТ: /model_gpt-4o-mini
-  ===============================
+  ================================
 */
 openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
   const { chatId, userMessage } = req.body;
@@ -183,8 +183,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
     }
 
     if (!userCache) {
-      console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
-
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -242,7 +240,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
     // Синхронизация каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
       await UserModelRequest.upsert({
         user_id: userCache.userId,
         subscription_id: userCache.subscriptionId,

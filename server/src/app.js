@@ -23,7 +23,7 @@ app.use('/api/openaiO1', openaiO1Router);
 app.use('/api', systemRouter);
 
 
-cron.schedule('56 18 * * *', subscription);
+cron.schedule('00 02 * * *', subscription);
 
 
 // WebHook 
