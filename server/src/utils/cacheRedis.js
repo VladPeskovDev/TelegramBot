@@ -168,26 +168,24 @@ async function subscribeToExpirations() {
           try {
             const userCache = JSON.parse(mainVal);
             // Проверим, есть ли нужные поля
-            if (userCache.userId && userCache.subscriptionId && userCache.modelId !== undefined) {
+            if (userCache.userId && userCache.modelId !== undefined && userCache.requestCount !== undefined) {
               await UserModelRequest.upsert({
                 user_id: userCache.userId,
-                subscription_id: userCache.subscriptionId,
                 model_id: userCache.modelId,
                 request_count: userCache.requestCount,
               }, {
                 where: {
                   user_id: userCache.userId,
-                  subscription_id: userCache.subscriptionId,
                   model_id: userCache.modelId,
                 }
               });
               console.log(`[DEBUG] [cacheRedis] Синхронизация прошла успешно (mainKey="${mainKey}").`);
             } else {
-              console.warn(`[WARN] [cacheRedis] mainKey="${mainKey}" не содержит нужных полей.`);
+              console.warn(`[WARN] [cacheRedis] mainKey="${mainKey}" не содержит нужных полей. Данные:`, userCache);
             }
           } catch (err) {
             console.error(`❌ [cacheRedis] Ошибка при upsert для "${mainKey}":`, err.message);
-          }
+          }          
           // Можно сейчас сразу удалить mainKey, если хотим
           // await redis.del(mainKey);
         } else {

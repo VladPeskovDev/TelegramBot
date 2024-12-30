@@ -19,16 +19,6 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
-      subscription_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'UserSubscriptions',
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
-      },
       model_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -53,8 +43,14 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    // Добавление уникального индекса
+    await queryInterface.addIndex('UserModelRequests', ['user_id', 'model_id'], {
+      unique: true,
+      name: 'user_model_unique'
+    });
   },
-  // eslint-disable-next-line no-unused-vars
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('UserModelRequests');
   },
