@@ -13,29 +13,23 @@ const TRIGGER_KEY_TTL = 298;  // триггер на 2 секунды меньш
 openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
   const { chatId, userMessage } = req.body;
 
-  console.log(`[DEBUG] POST /model_o1-mini-2024-09-12 : chatId=${chatId}, userMessage="${userMessage}"`);
-
   if (!userMessage) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
   const modelName = 'o1-mini-2024-09-12';
-
-  // Основной ключ + триггер-ключ + контекст
   const mainKey = `user_${chatId}_o1-mini-2024-09-12`;
   const triggerKey = `trigger_${chatId}_o1-mini-2024-09-12`;
   const contextKey = `user_${chatId}_o1-mini-2024-09-12_context`;
 
   try {
-    // 1) Считываем из Redis
     let userCache = await cache.getCache(mainKey);
     let userContext = await cache.getCache(contextKey);
-
     if (!userContext) {
       userContext = [];
     }
 
-    // 2) Если нет userCache в Redis — грузим из БД
+  
     if (!userCache) {
       console.log(`[DEBUG] userCache не найден в Redis, загружаем из БД...`);
 
@@ -61,14 +55,13 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: { 
           subscription_id: activeSubscription.subscription_id,
-          model_id: 4, // ID вашей модели
+          model_id: 4, 
         },
       });
 
       const userModelRequest = await UserModelRequest.findOne({
         where: { 
           user_id: user.id,
-          subscription_id: activeSubscription.id,
           model_id: 4,
         },
       });
@@ -78,7 +71,6 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       // Формируем объект
       userCache = {
         userId: user.id,
-        subscriptionId: activeSubscription.id,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
@@ -90,10 +82,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       // Ставим/обновляем триггер-ключ (TTL=298)
       await cache.setCache(triggerKey, '1', TRIGGER_KEY_TTL);
 
-    } else {
-      console.log(`[DEBUG] userCache найден:`, userCache);
-    }
-
+    } 
     // 3) Проверяем лимит
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
@@ -111,13 +100,11 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       try {
         await UserModelRequest.upsert({
           user_id: userCache.userId,
-          subscription_id: userCache.subscriptionId,
           model_id: userCache.modelId,
           request_count: userCache.requestCount,
         }, {
           where: {
             user_id: userCache.userId,
-            subscription_id: userCache.subscriptionId,
             model_id: userCache.modelId,
           }
         });

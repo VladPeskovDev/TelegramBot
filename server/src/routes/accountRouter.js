@@ -1,9 +1,10 @@
 const express = require('express');
 const { User, UserSubscription, Subscription, SubscriptionModelLimit, UserModelRequest, GPTModel } = require('../../db/models');
-const { format } = require('date-fns'); // Подключаем библиотеку для форматирования дат
-const { ru } = require('date-fns/locale'); // Локализация для русского языка
+const { format } = require('date-fns'); 
+const { ru } = require('date-fns/locale'); 
 
 const accountRouter = express.Router();
+
 
 accountRouter.route('/').post(async (req, res) => {
   const { chatId } = req.body;
@@ -56,7 +57,6 @@ accountRouter.route('/').post(async (req, res) => {
       const userModelRequest = await UserModelRequest.findOne({
         where: {
           user_id: user.id,
-          subscription_id: activeSubscription.id,
           model_id: limit.model_id,
         },
       });
@@ -84,7 +84,6 @@ accountRouter.route('/').post(async (req, res) => {
     res.status(500).json({ error: 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
-
 
 
 module.exports = accountRouter;

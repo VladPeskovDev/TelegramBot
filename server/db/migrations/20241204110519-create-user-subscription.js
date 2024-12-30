@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // Связь с таблицей Users
+          model: 'Users', // Ссылается на таблицу Users
           key: 'id',
         },
         onDelete: 'CASCADE',
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Subscriptions', // Связь с таблицей Subscriptions
+          model: 'Subscriptions', // Ссылается на таблицу Subscriptions
           key: 'id',
         },
         onDelete: 'CASCADE',
@@ -40,15 +40,24 @@ module.exports = {
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });
+
+    // Добавляем уникальный индекс
+    await queryInterface.addIndex('UserSubscriptions', ['user_id', 'subscription_id'], {
+      unique: true,
+      name: 'user_subscription_unique',
+    });
   },
-  // eslint-disable-next-line no-unused-vars
+
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeIndex('UserSubscriptions', 'user_subscription_unique');
     await queryInterface.dropTable('UserSubscriptions');
   },
 };

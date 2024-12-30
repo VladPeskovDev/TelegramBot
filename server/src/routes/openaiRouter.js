@@ -24,7 +24,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
   const contextKey = `user_${chatId}_gpt-4o-mini_context`;
 
   try {
-    // Считываем основные данные пользователя
     let userCache = await cache.getCache(mainKey);
     let userContext = await cache.getCache(contextKey);
     if (!userContext) {
@@ -65,7 +64,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       const userModelRequest = await UserModelRequest.findOne({
         where: {
           user_id: user.id,
-          subscription_id: activeSubscription.id,
           model_id: 3
         }
       });
@@ -74,7 +72,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
       userCache = {
         userId: user.id,
-        subscriptionId: activeSubscription.id,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
@@ -101,14 +98,12 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       await UserModelRequest.upsert(
         {
           user_id: userCache.userId,
-          subscription_id: userCache.subscriptionId,
           model_id: userCache.modelId,
           request_count: userCache.requestCount
         },
         {
           where: {
             user_id: userCache.userId,
-            subscription_id: userCache.subscriptionId,
             model_id: userCache.modelId
           }
         }
@@ -140,8 +135,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
     await cache.setCache(mainKey, userCache, 300);  
     await cache.setCache(triggerKey, '1', 298);     
-
-    // Сохраняем контекст
     await cache.setCache(contextKey, userContext, 300);
 
     // Кэшируем ответ, если не длинный
@@ -211,14 +204,16 @@ openaiRouter.route('/model4').post(async (req, res) => {
       }
 
       const userModelRequest = await UserModelRequest.findOne({
-        where: { user_id: user.id, subscription_id: activeSubscription.id, model_id: 2 }
+        where: { 
+          user_id: user.id, 
+          model_id: 2 
+        }
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
 
       userCache = {
         userId: user.id,
-        subscriptionId: activeSubscription.id,
         modelId: 2,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
@@ -242,14 +237,12 @@ openaiRouter.route('/model4').post(async (req, res) => {
       userCache.syncing = true;
       await UserModelRequest.upsert({
         user_id: userCache.userId,
-        subscription_id: userCache.subscriptionId,
         model_id: userCache.modelId,
         request_count: userCache.requestCount
       },
       {
         where: {
           user_id: userCache.userId,
-          subscription_id: userCache.subscriptionId,
           model_id: userCache.modelId
         }
       });
@@ -272,8 +265,8 @@ openaiRouter.route('/model4').post(async (req, res) => {
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
     }
 
     // Сохраняем mainKey (TTL=300) + triggerKey (TTL=298)
@@ -331,6 +324,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
+      // Проверяем активную подписку пользователя
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
@@ -343,9 +337,10 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
+      // Проверяем лимиты подписки для данной модели
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
-          subscription_id: activeSubscription.subscription_id,
+          subscription_id: activeSubscription.id, 
           model_id: 1
         }
       });
@@ -354,10 +349,10 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
       }
 
+      // Получаем или создаём запись UserModelRequest
       const userModelRequest = await UserModelRequest.findOne({
         where: {
           user_id: user.id,
-          subscription_id: activeSubscription.id,
           model_id: 1
         }
       });
@@ -366,16 +361,16 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
       userCache = {
         userId: user.id,
-        subscriptionId: activeSubscription.id,
-        modelId: 1,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
-        syncing: false
+        syncing: false,
+        modelId: 1
       };
     } else {
       console.log('✅ Данные пользователя получены из кэша.');
     }
 
+    // Проверка лимита запросов
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`
@@ -389,25 +384,25 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       userCache.syncing = true;
       await UserModelRequest.upsert({
         user_id: userCache.userId,
-        subscription_id: userCache.subscriptionId,
         model_id: userCache.modelId,
         request_count: userCache.requestCount
       },
       {
         where: {
           user_id: userCache.userId,
-          subscription_id: userCache.subscriptionId,
           model_id: userCache.modelId
         }
       });
       userCache.syncing = false;
     }
 
+    // Формирование контекста сообщений
     userContext.push({ role: 'user', content: userMessage });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
     }
 
+    // Запрос к OpenAI
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
@@ -417,19 +412,17 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
+    // Сохраняем ответ в контексте
     userContext.push({ role: 'assistant', content: botResponse });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
     }
 
-    // Сохраняем основной ключ (TTL=300) + триггер (TTL=298)
+    // Кэшируем данные
     await cache.setCache(mainKey, userCache, 300);
     await cache.setCache(triggerKey, '1', 298);
-
-    // Контекст
     await cache.setCache(contextKey, userContext, 300);
 
-    // Ответ
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
       await cache.setCache(respKey, botResponse, 300);
@@ -441,6 +434,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
+
 
 module.exports = openaiRouter;
  
