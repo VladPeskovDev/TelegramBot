@@ -6,7 +6,6 @@ const setupHelpCommand = require('./commands/help');
 const setupSubscriptionCommand = require('./commands/subscription');
 const setupAccountCommand = require('./commands/account');
 const setupModelCommand = require('./commands/model');
-const Numerologist = require('./commands/numerologist');
 const { handleFeedbackCommand } = require('./commands/feedback');
 const { handleResetCommand } = require('./commands/reset');
 
@@ -27,8 +26,7 @@ bot.setMyCommands([
   { command: '/account', description: '👤 Получить информацию о вашем аккаунте' },
   { command: '/model', description: '🛠 Выбрать модель' },
   { command: '/feedback', description: '✉️ Связаться с нами' },
-  { command: '/reset', description: '🗑️ Сбросить контекст диалога' },
-  {command: '/numerologist', description: '🧮 Личный нумеролог'}
+  { command: '/reset', description: '🗑️ Сбросить контекст диалога' }
 ]);
 
 // Подключаем команды
@@ -40,7 +38,7 @@ setupAccountCommand(bot);
 setupModelCommand(bot);
 handleFeedbackCommand(bot);
 handleResetCommand(bot);
-Numerologist(bot);
+
 
 console.log('Бот настроен для работы с WebHook.');
 

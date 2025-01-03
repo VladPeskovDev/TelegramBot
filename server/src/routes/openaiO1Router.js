@@ -52,9 +52,11 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
         });
       }
 
+      const subscriptionPlanId = activeSubscription.subscription.id;
+
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: { 
-          subscription_id: activeSubscription.subscription_id,
+          subscription_id: subscriptionPlanId,
           model_id: 4, 
         },
       });

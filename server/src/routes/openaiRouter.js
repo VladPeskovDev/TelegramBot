@@ -50,9 +50,12 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         });
       }
 
+
+      const subscriptionPlanId = activeSubscription.subscription.id;
+
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
-          subscription_id: activeSubscription.subscription_id,
+          subscription_id: subscriptionPlanId, 
           model_id: 3
         }
       });
@@ -195,8 +198,13 @@ openaiRouter.route('/model4').post(async (req, res) => {
         });
       }
 
+      const subscriptionPlanId = activeSubscription.subscription.id;
+
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
-        where: { subscription_id: activeSubscription.subscription_id, model_id: 2 }
+        where: { 
+          subscription_id: subscriptionPlanId,
+          model_id: 2 
+        }
       });
 
       if (!subscriptionLimit) {
@@ -337,10 +345,12 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
+      const subscriptionPlanId = activeSubscription.subscription.id;
+
       // Проверяем лимиты подписки для данной модели
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
-          subscription_id: activeSubscription.id, 
+          subscription_id: subscriptionPlanId, 
           model_id: 1
         }
       });
