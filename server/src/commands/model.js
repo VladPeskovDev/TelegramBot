@@ -1,14 +1,24 @@
 const axios = require('../utils/axiosInstance');
 
-// --- Состояния и модели для GPT ---
-const userModels = {}; // для хранения выбранной GPT-модели
-// По умолчанию пусть будет GPT-3.5, если пользователь не выбрал ничего
+const userModels = {}; 
 const DEFAULT_MODEL = { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
+const userState = {};                 
+const userNumerologyChoices = {};     
+const userNumerologyRes = {};         
 
-// --- Состояния и данные для нумерологии ---
-const userState = {};                 // 'gpt' или 'numerologist'
-const userNumerologyChoices = {};     // выбранный тип расклада
-const userNumerologyRes = {};         // текст-подсказка "Теперь отправьте ваш запрос..."
+function showMainMenu(bot, chatId, messageId) {
+  return bot.editMessageText('Выберите режим работы:', {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🤖 GPT', callback_data: 'GPT_MAIN_CHOICE' }],
+        [{ text: '🔮 Личный нумеролог', callback_data: 'NUMERO_MAIN_CHOICE' }],
+      ],
+    },
+  });
+}
+
 
 module.exports = (bot) => {
   // ───────────────────────────────────────────────────────────────────────────
@@ -25,7 +35,7 @@ module.exports = (bot) => {
     const options = {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🤖 GPT', callback_data: 'GPT_MAIN_CHOICE' }],
+          [{ text: '🤖 ChatGPT', callback_data: 'GPT_MAIN_CHOICE' }],
           [{ text: '🔮 Личный нумеролог', callback_data: 'NUMERO_MAIN_CHOICE' }],
         ],
       },
@@ -41,11 +51,16 @@ module.exports = (bot) => {
   // ───────────────────────────────────────────────────────────────────────────
   bot.on('callback_query', async (callbackQuery) => {
     const chatId = String(callbackQuery.message.chat.id);
+    const messageId = callbackQuery.message.message_id;
     const data = callbackQuery.data;
+
+    if (data === 'BACK_MAIN_CHOICE') {
+      userState[chatId] = null;
+      return showMainMenu(bot, chatId, messageId);
+    }
 
     // Обработка основного выбора: GPT или Нумеролог
     if (data === 'GPT_MAIN_CHOICE') {
-      // Пользователь выбрал GPT — показываем список моделей
       userState[chatId] = 'gpt';
       return bot.editMessageText('Выберите модель GPT:', {
         chat_id: chatId,
@@ -60,13 +75,15 @@ module.exports = (bot) => {
               { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
               { text: '🆕 o1-mini-NEW', callback_data: 'o1-mini-NEW' },
             ],
+            [
+              { text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' },
+            ],
           ],
         },
       });
     }
 
     if (data === 'NUMERO_MAIN_CHOICE') {
-      // Пользователь выбрал нумерологию
       userState[chatId] = 'numerologist';
 
       return bot.editMessageText(
@@ -101,6 +118,10 @@ module.exports = (bot) => {
                   callback_data: 'numerology_pythagoras' 
                 },
               ],
+              [
+                { text: '🔙 Назад', 
+                  callback_data: 'BACK_MAIN_CHOICE' },
+              ],
             ],
           },
         }
@@ -131,7 +152,6 @@ module.exports = (bot) => {
           });
       }
 
-      // Сохраняем выбор пользователя
       userModels[chatId] = { modelName: data, endpoint };
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: `Вы выбрали модель ${data}.`,
@@ -197,27 +217,20 @@ module.exports = (bot) => {
     const chatId = String(msg.chat.id);
     const userMessage = msg.text;
 
-    
     if (!userMessage || userMessage.startsWith('/')) {
       return;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 3.1. Если пользователь в состоянии "Личный нумеролог"
-    // ─────────────────────────────────────────────────────────────────────────
     if (userState[chatId] === 'numerologist') {
-      // Отправляем запрос к единому эндпоинту /api/openai/numerologist,
-      // передавая тип (userNumerologyChoices[chatId]) в поле type
       try {
         const response = await axios.post('/api/openai/numerologist', {
           chatId,
-          type: userNumerologyChoices[chatId], // какой именно расклад
+          type: userNumerologyChoices[chatId], 
           userMessage,
         });
 
         const botResponse = response.data.reply || 'Нет ответа...';
 
-        
         if (botResponse.length <= 4000) {
           return bot.sendMessage(
             chatId,
@@ -247,16 +260,12 @@ module.exports = (bot) => {
           { parse_mode: 'Markdown' }
         );
       } finally {
-        // Сбрасываем состояние, чтобы заново выбирать /model или /numerologist
         userState[chatId] = null;
         delete userNumerologyChoices[chatId];
         delete userNumerologyRes[chatId];
       }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 3.2. Во всех остальных случаях — считаем, что пользователь в режиме GPT
-    // ─────────────────────────────────────────────────────────────────────────
     const userModel = userModels[chatId] || DEFAULT_MODEL;
     let processingMessageId;
     try {
@@ -279,7 +288,6 @@ module.exports = (bot) => {
 
       const botResponse = response.data.reply;
 
-      // Удаляем сообщение "Обрабатывается..."
       if (processingMessageId) {
         try {
           await bot.deleteMessage(chatId, processingMessageId);
@@ -288,7 +296,6 @@ module.exports = (bot) => {
         }
       }
 
-      // Проверяем длину ответа
       if (botResponse.length <= 4000) {
         bot.sendMessage(chatId, `🤖 *Ответ:* \n${botResponse}`, {
           parse_mode: 'Markdown',
@@ -308,7 +315,6 @@ module.exports = (bot) => {
     } catch (error) {
       console.error('❌ Ошибка при обработке GPT-сообщения:', error);
 
-      // Удаляем "Обрабатывается..." при ошибке
       if (processingMessageId) {
         try {
           await bot.deleteMessage(chatId, processingMessageId);
