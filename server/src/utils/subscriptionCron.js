@@ -3,83 +3,90 @@ const { Op } = require('sequelize');
 
 async function subscription() {
   console.log('🕒 [CRON JOB] Запуск обновления подписок и лимитов...');
-
   try {
-    const now = new Date(); // Текущее время
-    const nextMonth = new Date(new Date().setMonth(now.getMonth() + 1)); // Текущая дата + 1 месяц
+    const now = new Date();
+    const nextMonth = new Date(new Date().setMonth(now.getMonth() + 1));
 
-    // 1️⃣ Обновляем бесплатные подписки (продлеваем лимиты на месяц, обновляем start_date)
-    const updatedFreeSubscriptions = await UserSubscription.update(
-      {
-        start_date: now,
-        end_date: nextMonth
+    // 1. Продлеваем истёкшие бесплатные подписки
+    const expiredFreeSubs = await UserSubscription.findAll({
+      where: {
+        subscription_id: 1,
+        end_date: { [Op.lte]: now },
       },
-      {
-        where: {
-          subscription_id: 1, // Бесплатная подписка
-          end_date: { [Op.lte]: now }
-        }
-      }
-    );
-    console.log(`✅ Бесплатные подписки обновлены: ${updatedFreeSubscriptions[0]} записей`);
+      attributes: ['user_id'],
+    });
 
-    // 2️⃣ Сбрасываем лимиты для бесплатных пользователей
-    const resetFreeLimits = await UserModelRequest.update(
-      { request_count: 0 },
-      {
-        where: {
-          user_id: {
-            [Op.in]: (
-              await UserSubscription.findAll({
-                attributes: ['user_id'],
-                where: {
-                  subscription_id: 1,
-                  end_date: { [Op.lte]: now }
-                }
-              })
-            ).map((sub) => sub.user_id)
-          }
+    if (expiredFreeSubs.length > 0) {
+      // Обновляем их
+      const updatedCount = await UserSubscription.update(
+        {
+          start_date: now,
+          end_date: nextMonth,
+        },
+        {
+          where: {
+            subscription_id: 1,
+            end_date: { [Op.lte]: now },
+          },
         }
-      }
-    );
-    console.log(`✅ Лимиты для бесплатных подписок сброшены: ${resetFreeLimits[0]} записей`);
+      );
+      console.log(`✅ Бесплатные подписки обновлены: ${updatedCount[0]} записей`);
 
-    // 3️⃣ Переключаем истекшие платные подписки на бесплатные (обновляем start_date и end_date)
-    const downgradedSubscriptions = await UserSubscription.update(
-      {
-        subscription_id: 1, // ID бесплатной подписки
-        start_date: now,
-        end_date: nextMonth
+      // Сбрасываем лимиты только этим user_id
+      const userIds = expiredFreeSubs.map((sub) => sub.user_id);
+      const resetCount = await UserModelRequest.update(
+        { request_count: 0 },
+        {
+          where: {
+            user_id: { [Op.in]: userIds },
+          },
+        }
+      );
+      console.log(`✅ Лимиты для продлённых бесплатных подписок сброшены: ${resetCount[0]} записей`);
+    } else {
+      console.log('✅ Нет истёкших бесплатных подписок для обновления.');
+    }
+
+    // 2. Переводим истёкшие платные подписки на бесплатную
+    const expiredPaidSubs = await UserSubscription.findAll({
+      where: {
+        subscription_id: { [Op.ne]: 1 }, // платные подписки
+        end_date: { [Op.lte]: now },
       },
-      {
-        where: {
-          subscription_id: { [Op.ne]: 1 }, // Исключаем бесплатную подписку
-          end_date: { [Op.lte]: now }
-        }
-      }
-    );
-    console.log(`✅ Истекшие платные подписки переведены на бесплатные: ${downgradedSubscriptions[0]} записей`);
+      attributes: ['user_id'],
+    });
 
-    // 4️⃣ Сбрасываем лимиты для пользователей с обновленной бесплатной подпиской
-    const resetPaidToFreeLimits = await UserModelRequest.update(
-      { request_count: 0 },
-      {
-        where: {
-          user_id: {
-            [Op.in]: (
-              await UserSubscription.findAll({
-                attributes: ['user_id'],
-                where: {
-                  subscription_id: 1,
-                  end_date: { [Op.gte]: now }
-                }
-              })
-            ).map((sub) => sub.user_id)
-          }
+    if (expiredPaidSubs.length > 0) {
+      // Обновляем
+      const downgradedCount = await UserSubscription.update(
+        {
+          subscription_id: 1,
+          start_date: now,
+          end_date: nextMonth,
+        },
+        {
+          where: {
+            subscription_id: { [Op.ne]: 1 },
+            end_date: { [Op.lte]: now },
+          },
         }
-      }
-    );
-    console.log(`✅ Лимиты для пользователей с обновленной бесплатной подпиской сброшены: ${resetPaidToFreeLimits[0]} записей`);
+      );
+      console.log(`✅ Истекшие платные подписки переведены на бесплатные: ${downgradedCount[0]} записей`);
+
+      // Сбрасываем лимиты только этим user_id
+      const userIds = expiredPaidSubs.map((sub) => sub.user_id);
+      const resetCount = await UserModelRequest.update(
+        { request_count: 0 },
+        {
+          where: {
+            user_id: { [Op.in]: userIds },
+          },
+        }
+      );
+      console.log(`✅ Лимиты для пользователей с обновлённой бесплатной подпиской сброшены: ${resetCount[0]} записей`);
+    } else {
+      console.log('✅ Нет истёкших платных подписок для перевода на бесплатную.');
+    }
 
     console.log('✅ [CRON JOB] Обновление подписок и лимитов завершено');
   } catch (error) {
@@ -88,4 +95,3 @@ async function subscription() {
 }
 
 module.exports = { subscription };
-

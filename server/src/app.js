@@ -22,9 +22,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/openaiO1', openaiO1Router);
 app.use('/api', systemRouter);
 
-
 cron.schedule('00 02 * * *', subscription);
-
 
 // WebHook 
 app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {

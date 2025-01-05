@@ -3,6 +3,7 @@ const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionMode
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
 const cache = require('../utils/cacheRedis');
+const { getSystemPromptByType } = require('../utils/numerologyPrompts');
 require('dotenv').config();
 
 /* 
@@ -19,8 +20,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
   // Модель + ключи
   const modelName = 'gpt-4o-mini-2024-07-18';
-  const mainKey = `user_${chatId}_gpt-4o-mini`;       // Основной ключ
-  const triggerKey = `trigger_${chatId}_gpt-4o-mini`; // Триггер-ключ
+  const mainKey = `user_${chatId}_gpt-4o-mini`;       
+  const triggerKey = `trigger_${chatId}_gpt-4o-mini`; 
   const contextKey = `user_${chatId}_gpt-4o-mini_context`;
 
   try {
@@ -50,9 +51,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         });
       }
 
-
       const subscriptionPlanId = activeSubscription.subscription.id;
-
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
           subscription_id: subscriptionPlanId, 
@@ -91,10 +90,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       });
     }
 
-    // Увеличиваем счётчик и (ниже) будем сохранять
     userCache.requestCount += 1;
 
-    // Синхронизация каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
       console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
@@ -114,13 +111,11 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       userCache.syncing = false;
     }
 
-    // 📦 Формируем контекст (messages)
     userContext.push({ role: 'user', content: userMessage });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
     }
 
-    // Запрос к OpenAI
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
@@ -130,7 +125,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
-    // Ответ бота
     userContext.push({ role: 'assistant', content: botResponse });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
@@ -140,7 +134,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     await cache.setCache(triggerKey, '1', 298);     
     await cache.setCache(contextKey, userContext, 300);
 
-    // Кэшируем ответ, если не длинный
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
       await cache.setCache(respKey, botResponse, 300);
@@ -152,7 +145,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
-
 
 /* 
   ===============================
@@ -199,7 +191,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
       }
 
       const subscriptionPlanId = activeSubscription.subscription.id;
-
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: { 
           subscription_id: subscriptionPlanId,
@@ -240,7 +231,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
 
     userCache.requestCount += 1;
 
-    // Синхронизация каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
       await UserModelRequest.upsert({
@@ -257,7 +247,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
       userCache.syncing = false;
     }
 
-    // Формируем контекст
     userContext.push({ role: 'user', content: userMessage });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
@@ -277,14 +266,11 @@ openaiRouter.route('/model4').post(async (req, res) => {
       userContext = userContext.slice(-4);
     }
 
-    // Сохраняем mainKey (TTL=300) + triggerKey (TTL=298)
     await cache.setCache(mainKey, userCache, 300);
     await cache.setCache(triggerKey, '1', 298);
 
-    // Сохраняем контекст
     await cache.setCache(contextKey, userContext, 300);
 
-    // Кэшируем ответ
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
       await cache.setCache(respKey, botResponse, 300);
@@ -296,7 +282,6 @@ openaiRouter.route('/model4').post(async (req, res) => {
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
-
 
 /* 
   ===============================
@@ -332,7 +317,6 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         });
       }
 
-      // Проверяем активную подписку пользователя
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
@@ -380,7 +364,6 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       console.log('✅ Данные пользователя получены из кэша.');
     }
 
-    // Проверка лимита запросов
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`
@@ -389,7 +372,6 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     userCache.requestCount += 1;
 
-    // Синхронизация каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
       await UserModelRequest.upsert({
@@ -406,13 +388,11 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       userCache.syncing = false;
     }
 
-    // Формирование контекста сообщений
     userContext.push({ role: 'user', content: userMessage });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
     }
 
-    // Запрос к OpenAI
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
@@ -422,13 +402,11 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
-    // Сохраняем ответ в контексте
     userContext.push({ role: 'assistant', content: botResponse });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
     }
 
-    // Кэшируем данные
     await cache.setCache(mainKey, userCache, 300);
     await cache.setCache(triggerKey, '1', 298);
     await cache.setCache(contextKey, userContext, 300);
@@ -446,6 +424,142 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 });
 
 
+openaiRouter.route('/numerologist').post(async (req, res) => {
+  const { chatId, type, userMessage } = req.body;
+
+  if (!userMessage) {
+    return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
+  }
+
+  const modelName = 'gpt-4o-2024-05-13'; 
+  const MODEL_ID = 5; 
+
+  const mainKey = `user_${chatId}_numerologist`;      
+  const triggerKey = `trigger_${chatId}_numerologist`; 
+  const contextKey = `user_${chatId}_numerologist_context`;
+
+  try {
+    let userCache = await cache.getCache(mainKey);
+    let userContext = await cache.getCache(contextKey);
+    if (!userContext) {
+      userContext = [];
+    }
+
+    if (!userCache) {
+      const user = await User.findOne({ where: { telegram_id: chatId } });
+      if (!user) {
+        return res.status(403).json({
+          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.'
+        });
+      }
+
+      const activeSubscription = await UserSubscription.findOne({
+        where: { user_id: user.id },
+        include: [{ model: Subscription, as: 'subscription' }],
+        order: [['end_date', 'DESC']]
+      });
+
+      if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
+        return res.status(403).json({
+          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.'
+        });
+      }
+
+      const subscriptionPlanId = activeSubscription.subscription.id;
+      const subscriptionLimit = await SubscriptionModelLimit.findOne({
+        where: {
+          subscription_id: subscriptionPlanId,
+          model_id: MODEL_ID 
+        }
+      });
+
+      if (!subscriptionLimit) {
+        return res.status(400).json({ error: 'Лимиты для данной подписки и модели (нумерология) не найдены.' });
+      }
+
+      const userModelRequest = await UserModelRequest.findOne({
+        where: { user_id: user.id, model_id: MODEL_ID }
+      });
+
+      const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
+
+      userCache = {
+        userId: user.id,
+        modelId: MODEL_ID,
+        requestsLimit: subscriptionLimit.requests_limit,
+        requestCount: currentRequestCount,
+        syncing: false
+      };
+    } else {
+      console.log('✅ [numerologist] Данные пользователя получены из кэша.');
+    }
+
+    // 3) Проверка лимита
+    if (userCache.requestCount >= userCache.requestsLimit) {
+      return res.status(403).json({
+        error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели нумеролога.`
+      });
+    }
+
+    userCache.requestCount += 1;
+
+    if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+      userCache.syncing = true;
+      await UserModelRequest.upsert({
+        user_id: userCache.userId,
+        model_id: userCache.modelId,
+        request_count: userCache.requestCount
+      },
+      {
+        where: {
+          user_id: userCache.userId,
+          model_id: userCache.modelId
+        }
+      });
+      userCache.syncing = false;
+    }
+
+
+    // (а) Берём системный промпт в зависимости от type
+    const systemPrompt = getSystemPromptByType(type);
+    userContext.push({ role: 'system', content: systemPrompt });
+    userContext.push({ role: 'user', content: userMessage });
+
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
+    }
+
+    // 6) Запрос к OpenAI
+    const response = await openai.chat.completions.create({
+      model: modelName, 
+      messages: userContext,
+      max_tokens: 1000,
+      temperature: 0.9,
+    });
+
+    const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
+
+    
+    userContext.push({ role: 'assistant', content: botResponse });
+    if (userContext.length > 4) {
+      userContext = userContext.slice(-4);
+    }
+
+    await cache.setCache(mainKey, userCache, 300);
+    await cache.setCache(triggerKey, '1', 298);
+    await cache.setCache(contextKey, userContext, 300);
+
+    if (botResponse.length <= 5000) {
+      const respKey = `response_${chatId}_${userMessage}`;
+      await cache.setCache(respKey, botResponse, 300);
+    }
+    res.json({ reply: botResponse });
+  } catch (error) {
+    console.error('❌ Ошибка при обработке сообщения (numerologist):', error.message);
+    return res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
+  }
+});
+
 module.exports = openaiRouter;
  
  
@@ -453,6 +567,9 @@ module.exports = openaiRouter;
  
  
  
+
+
+
  
  
  /* const express = require('express');

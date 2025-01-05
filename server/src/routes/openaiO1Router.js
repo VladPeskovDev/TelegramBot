@@ -6,9 +6,8 @@ require('dotenv').config();
 
 const openaiO1Router = express.Router();
 
-
-const MAIN_KEY_TTL = 300;     // основной ключ живёт 300 сек
-const TRIGGER_KEY_TTL = 298;  // триггер на 2 секунды меньше
+const MAIN_KEY_TTL = 300;     
+const TRIGGER_KEY_TTL = 298;  
 
 openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
   const { chatId, userMessage } = req.body;
@@ -152,9 +151,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       await cache.setCache(responseKey, botResponse, MAIN_KEY_TTL);
     }
 
-    // 8) Отправляем ответ
     res.json({ reply: botResponse });
-
   } catch (error) {
     console.error('❌ Ошибка при обработке сообщения:', error.message);
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });

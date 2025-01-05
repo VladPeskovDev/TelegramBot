@@ -41,6 +41,18 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        name: 'Numerolog Standart Plan',
+        price: 4,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Numerolog Premium Plan',
+        price: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ], {});
 
     // Данные для таблицы UserSubscriptions
@@ -77,6 +89,11 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        name: 'numerologist',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ], {});
 
     // Данные для таблицы SubscriptionModelLimits
@@ -91,7 +108,7 @@ module.exports = {
       {
         subscription_id: 1, // Free Plan
         model_id: 2, // gpt-4o
-        requests_limit: 2,
+        requests_limit: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -105,6 +122,13 @@ module.exports = {
       {
         subscription_id: 1, // Free Plan
         model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 1, // Free Plan
+        model_id: 5, // o1-mini-2024-09-12
         requests_limit: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -138,6 +162,13 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
+        subscription_id: 2, 
+        model_id: 5, // o1-mini-2024-09-12
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
         subscription_id: 3, // Standart Plus Plan
         model_id: 1, // GPT-3.5
         requests_limit: 100,
@@ -166,6 +197,13 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
+        subscription_id: 3, // Standart Plus Plan
+        model_id: 5, // numerologist
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
         subscription_id: 4, // Premium Plan
         model_id: 1, // GPT-3.5
         requests_limit: 250,
@@ -190,6 +228,83 @@ module.exports = {
         subscription_id: 4, // Standart Plus Plan
         model_id: 4, // o1-mini-2024-09-12
         requests_limit: 25,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 4, // Standart Plus Plan
+        model_id: 5, // o1-mini-2024-09-12
+        requests_limit: 5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 5, // Numerologist Standart Plan
+        model_id: 1, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 5, 
+        model_id: 2, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 5, 
+        model_id: 3, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 5, 
+        model_id: 4, // o1-mini-2024-09-12
+        requests_limit: 5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 5, 
+        model_id: 5, // Numerologist
+        requests_limit: 30,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 6, // Numerologist Standart Plus Plan
+        model_id: 1, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 6, // Numerologist Standart Plus Plan
+        model_id: 2, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 6, // Numerologist Standart Plus Plan
+        model_id: 3, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 6, // Numerologist Standart Plus Plan
+        model_id: 4, 
+        requests_limit: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        subscription_id: 6, // Numerologist Standart Plus Plan
+        model_id: 5, 
+        requests_limit: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
