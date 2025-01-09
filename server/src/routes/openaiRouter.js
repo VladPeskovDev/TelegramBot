@@ -86,7 +86,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
       });
     }
 
@@ -225,7 +225,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
       });
     }
 
@@ -366,7 +366,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели ${modelName}.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
       });
     }
 
@@ -497,7 +497,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     // 3) Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов (${userCache.requestsLimit}) для модели нумеролога.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
       });
     }
 

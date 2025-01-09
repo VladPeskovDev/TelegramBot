@@ -8,6 +8,7 @@ const setupAccountCommand = require('./commands/account');
 const setupModelCommand = require('./commands/model');
 const { handleFeedbackCommand } = require('./commands/feedback');
 const { handleResetCommand } = require('./commands/reset');
+const integratePrometheusMetrics = require('./metrics/prometheusIntegration');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: true });
 
@@ -38,6 +39,7 @@ setupAccountCommand(bot);
 setupModelCommand(bot);
 handleFeedbackCommand(bot);
 handleResetCommand(bot);
+integratePrometheusMetrics(bot);
 
 
 console.log('Бот настроен для работы с WebHook.');

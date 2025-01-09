@@ -87,7 +87,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
     // 3) Проверяем лимит
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит (${userCache.requestsLimit}) для модели ${modelName}.`,
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 

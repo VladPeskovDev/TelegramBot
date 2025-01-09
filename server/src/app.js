@@ -4,7 +4,7 @@ const bot = require('./bot');
 const openaiRouter = require('./routes/openaiRouter');
 const accountRouter = require('./routes/accountRouter');
 const openaiO1Router = require('./routes/openaiO1Router');
-const systemRouter = require('./routes/systemRouter');
+const metricsRouter = require('./routes/metricsRouter');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
 const logger = require('./utils/logger');
@@ -20,9 +20,10 @@ app.use(express.json());
 app.use('/api/openai', openaiRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/openaiO1', openaiO1Router);
-app.use('/api', systemRouter);
+app.use('/api/metrics', metricsRouter);
 
-cron.schedule('00 02 * * *', subscription);
+cron.schedule('15 0 * * *', subscription); //00:15
+
 
 // WebHook 
 app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
