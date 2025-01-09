@@ -1,4 +1,5 @@
 const client = require('prom-client');
+const loggerWinston = require('../utils/loggerWinston'); 
 
 // Регистр метрик
 const register = new client.Registry();
@@ -44,7 +45,8 @@ let maxOnlineUsers = 0;
 function updateMaxOnline(currentOnline) {
   if (currentOnline > maxOnlineUsers) {
     maxOnlineUsers = currentOnline;
-    maxOnlineGauge.set(maxOnlineUsers); // Обновляем значение в метрике
+    maxOnlineGauge.set(maxOnlineUsers); 
+    loggerWinston.info(`📈 Обновлен максимальный онлайн: ${maxOnlineUsers}`);
   }
 }
 
