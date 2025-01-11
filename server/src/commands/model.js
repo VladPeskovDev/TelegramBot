@@ -1,7 +1,7 @@
 const axios = require('../utils/axiosInstance');
 
 const userModels = {}; 
-const DEFAULT_MODEL = { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
+const DEFAULT_MODEL = { modelName: 'GPT-3.5 Turbo', endpoint: '/api/openai/model3.5' };
 const userState = {};                 
 const userNumerologyChoices = {};     
 const userNumerologyRes = {};         
@@ -68,12 +68,12 @@ module.exports = (bot) => {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '🤖 GPT-3.5', callback_data: 'GPT-3.5' },
-              { text: '🧠 GPT-4o', callback_data: 'GPT-4o' },
+              { text: '🤖 GPT-3.5 Turbo', callback_data: 'GPT-3.5 Turbo' },
+              { text: '⚡ GPT-4o-mini', callback_data: 'GPT-4o-mini' },
             ],
             [
-              { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
-              { text: '🆕 o1-mini-NEW', callback_data: 'o1-mini-NEW' },
+              { text: '🧠 GPT-4o', callback_data: 'GPT-4o' },
+              { text: '🆕 GPT-o1-mini', callback_data: 'GPT-o1-mini' },
             ],
             [
               { text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' },
@@ -134,16 +134,16 @@ module.exports = (bot) => {
     if (userState[chatId] === 'gpt') {
       let endpoint;
       switch (data) {
-        case 'GPT-3.5':
+        case 'GPT-3.5 Turbo':
           endpoint = '/api/openai/model3.5';
           break;
         case 'GPT-4o':
           endpoint = '/api/openai/model4';
           break;
-        case 'gpt-4o-mini':
+        case 'GPT-4o-mini':
           endpoint = '/api/openai/model_gpt-4o-mini';
           break;
-        case 'o1-mini-NEW':
+        case 'GPT-o1-mini':
           endpoint = '/api/openaiO1/model_o1-mini-2024-09-12';
           break;
         default:
