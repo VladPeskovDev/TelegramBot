@@ -1,5 +1,11 @@
 const express = require('express');
-const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models');
+const {
+  User,
+  UserSubscription,
+  UserModelRequest,
+  Subscription,
+  SubscriptionModelLimit,
+} = require('../../db/models');
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
 const cache = require('../utils/cacheRedis');
@@ -20,8 +26,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
   // Модель + ключи
   const modelName = 'gpt-4o-mini-2024-07-18';
-  const mainKey = `user_${chatId}_gpt-4o-mini`;       
-  const triggerKey = `trigger_${chatId}_gpt-4o-mini`; 
+  const mainKey = `user_${chatId}_gpt-4o-mini`;
+  const triggerKey = `trigger_${chatId}_gpt-4o-mini`;
   const contextKey = `user_${chatId}_gpt-4o-mini_context`;
 
   try {
@@ -35,28 +41,28 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
-          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.'
+          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.',
         });
       }
 
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
-        order: [['end_date', 'DESC']]
+        order: [['end_date', 'DESC']],
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
         return res.status(403).json({
-          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.'
+          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
         });
       }
 
       const subscriptionPlanId = activeSubscription.subscription.id;
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
-          subscription_id: subscriptionPlanId, 
-          model_id: 3
-        }
+          subscription_id: subscriptionPlanId,
+          model_id: 3,
+        },
       });
 
       if (!subscriptionLimit) {
@@ -66,8 +72,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       const userModelRequest = await UserModelRequest.findOne({
         where: {
           user_id: user.id,
-          model_id: 3
-        }
+          model_id: 3,
+        },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
@@ -77,7 +83,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
-        modelId: 3
+        modelId: 3,
       };
     } else {
       console.log('✅ Данные пользователя получены из кэша.');
@@ -86,7 +92,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 
@@ -99,14 +105,14 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         {
           user_id: userCache.userId,
           model_id: userCache.modelId,
-          request_count: userCache.requestCount
+          request_count: userCache.requestCount,
         },
         {
           where: {
             user_id: userCache.userId,
-            model_id: userCache.modelId
-          }
-        }
+            model_id: userCache.modelId,
+          },
+        },
       );
       userCache.syncing = false;
     }
@@ -120,7 +126,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       model: modelName,
       messages: userContext,
       max_tokens: 1250,
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
@@ -130,8 +136,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       userContext = userContext.slice(-4);
     }
 
-    await cache.setCache(mainKey, userCache, 300);  
-    await cache.setCache(triggerKey, '1', 298);     
+    await cache.setCache(mainKey, userCache, 300);
+    await cache.setCache(triggerKey, '1', 298);
     await cache.setCache(contextKey, userContext, 300);
 
     if (botResponse.length <= 5000) {
@@ -159,8 +165,8 @@ openaiRouter.route('/model4').post(async (req, res) => {
   }
 
   const modelName = 'gpt-4o-2024-05-13';
-  const mainKey = `user_${chatId}_model4`;      
-  const triggerKey = `trigger_${chatId}_model4`; 
+  const mainKey = `user_${chatId}_model4`;
+  const triggerKey = `trigger_${chatId}_model4`;
   const contextKey = `user_${chatId}_model4_context`;
 
   try {
@@ -174,28 +180,28 @@ openaiRouter.route('/model4').post(async (req, res) => {
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
-          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.'
+          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.',
         });
       }
 
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
-        order: [['end_date', 'DESC']]
+        order: [['end_date', 'DESC']],
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
         return res.status(403).json({
-          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.'
+          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
         });
       }
 
       const subscriptionPlanId = activeSubscription.subscription.id;
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
-        where: { 
+        where: {
           subscription_id: subscriptionPlanId,
-          model_id: 2 
-        }
+          model_id: 2,
+        },
       });
 
       if (!subscriptionLimit) {
@@ -203,10 +209,10 @@ openaiRouter.route('/model4').post(async (req, res) => {
       }
 
       const userModelRequest = await UserModelRequest.findOne({
-        where: { 
-          user_id: user.id, 
-          model_id: 2 
-        }
+        where: {
+          user_id: user.id,
+          model_id: 2,
+        },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
@@ -216,7 +222,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
         modelId: 2,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
-        syncing: false
+        syncing: false,
       };
     } else {
       console.log('✅ Данные пользователя получены из кэша.');
@@ -225,7 +231,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 
@@ -233,17 +239,19 @@ openaiRouter.route('/model4').post(async (req, res) => {
 
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      await UserModelRequest.upsert({
-        user_id: userCache.userId,
-        model_id: userCache.modelId,
-        request_count: userCache.requestCount
-      },
-      {
-        where: {
+      await UserModelRequest.upsert(
+        {
           user_id: userCache.userId,
-          model_id: userCache.modelId
-        }
-      });
+          model_id: userCache.modelId,
+          request_count: userCache.requestCount,
+        },
+        {
+          where: {
+            user_id: userCache.userId,
+            model_id: userCache.modelId,
+          },
+        },
+      );
       userCache.syncing = false;
     }
 
@@ -256,7 +264,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
       model: modelName,
       messages: userContext,
       max_tokens: 1000,
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
@@ -296,8 +304,8 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
   }
 
   const modelName = 'gpt-3.5-turbo';
-  const mainKey = `user_${chatId}_model3.5`;       
-  const triggerKey = `trigger_${chatId}_model3.5`; 
+  const mainKey = `user_${chatId}_model3.5`;
+  const triggerKey = `trigger_${chatId}_model3.5`;
   const contextKey = `user_${chatId}_model3.5_context`;
 
   try {
@@ -308,35 +316,32 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     }
 
     if (!userCache) {
-      console.log('🔄 Данные пользователя не найдены в кэше. Запрашиваем из БД...');
-
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
-          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.'
+          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.',
         });
       }
 
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
-        order: [['end_date', 'DESC']]
+        order: [['end_date', 'DESC']],
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
         return res.status(403).json({
-          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.'
+          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
         });
       }
 
       const subscriptionPlanId = activeSubscription.subscription.id;
 
-      // Проверяем лимиты подписки для данной модели
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
-          subscription_id: subscriptionPlanId, 
-          model_id: 1
-        }
+          subscription_id: subscriptionPlanId,
+          model_id: 1,
+        },
       });
 
       if (!subscriptionLimit) {
@@ -347,8 +352,8 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       const userModelRequest = await UserModelRequest.findOne({
         where: {
           user_id: user.id,
-          model_id: 1
-        }
+          model_id: 1,
+        },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
@@ -358,7 +363,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
-        modelId: 1
+        modelId: 1,
       };
     } else {
       console.log('✅ Данные пользователя получены из кэша.');
@@ -366,7 +371,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 
@@ -374,37 +379,39 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      await UserModelRequest.upsert({
-        user_id: userCache.userId,
-        model_id: userCache.modelId,
-        request_count: userCache.requestCount
-      },
-      {
-        where: {
+      await UserModelRequest.upsert(
+        {
           user_id: userCache.userId,
-          model_id: userCache.modelId
-        }
-      });
+          model_id: userCache.modelId,
+          request_count: userCache.requestCount,
+        },
+        {
+          where: {
+            user_id: userCache.userId,
+            model_id: userCache.modelId,
+          },
+        },
+      );
       userCache.syncing = false;
     }
 
     userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
     }
 
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
       max_tokens: 1250,
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
     }
 
     await cache.setCache(mainKey, userCache, 300);
@@ -423,7 +430,6 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
   }
 });
 
-
 openaiRouter.route('/numerologist').post(async (req, res) => {
   const { chatId, type, userMessage } = req.body;
 
@@ -431,11 +437,11 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = 'gpt-4o-2024-05-13'; 
-  const MODEL_ID = 5; 
+  const modelName = 'gpt-4o-2024-05-13';
+  const MODEL_ID = 5;
 
-  const mainKey = `user_${chatId}_numerologist`;      
-  const triggerKey = `trigger_${chatId}_numerologist`; 
+  const mainKey = `user_${chatId}_numerologist`;
+  const triggerKey = `trigger_${chatId}_numerologist`;
   const contextKey = `user_${chatId}_numerologist_context`;
 
   try {
@@ -449,19 +455,19 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
-          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.'
+          error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.',
         });
       }
 
       const activeSubscription = await UserSubscription.findOne({
         where: { user_id: user.id },
         include: [{ model: Subscription, as: 'subscription' }],
-        order: [['end_date', 'DESC']]
+        order: [['end_date', 'DESC']],
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
         return res.status(403).json({
-          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.'
+          error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
         });
       }
 
@@ -469,16 +475,18 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: {
           subscription_id: subscriptionPlanId,
-          model_id: MODEL_ID 
-        }
+          model_id: MODEL_ID,
+        },
       });
 
       if (!subscriptionLimit) {
-        return res.status(400).json({ error: 'Лимиты для данной подписки и модели (нумерология) не найдены.' });
+        return res
+          .status(400)
+          .json({ error: 'Лимиты для данной подписки и модели (нумерология) не найдены.' });
       }
 
       const userModelRequest = await UserModelRequest.findOne({
-        where: { user_id: user.id, model_id: MODEL_ID }
+        where: { user_id: user.id, model_id: MODEL_ID },
       });
 
       const currentRequestCount = userModelRequest ? userModelRequest.request_count : 0;
@@ -488,7 +496,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
         modelId: MODEL_ID,
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
-        syncing: false
+        syncing: false,
       };
     } else {
       console.log('✅ [numerologist] Данные пользователя получены из кэша.');
@@ -497,7 +505,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     // 3) Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
-        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`
+        error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 
@@ -505,20 +513,21 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
 
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      await UserModelRequest.upsert({
-        user_id: userCache.userId,
-        model_id: userCache.modelId,
-        request_count: userCache.requestCount
-      },
-      {
-        where: {
+      await UserModelRequest.upsert(
+        {
           user_id: userCache.userId,
-          model_id: userCache.modelId
-        }
-      });
+          model_id: userCache.modelId,
+          request_count: userCache.requestCount,
+        },
+        {
+          where: {
+            user_id: userCache.userId,
+            model_id: userCache.modelId,
+          },
+        },
+      );
       userCache.syncing = false;
     }
-
 
     // (а) Берём системный промпт в зависимости от type
     const systemPrompt = getSystemPromptByType(type);
@@ -531,7 +540,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
 
     // 6) Запрос к OpenAI
     const response = await openai.chat.completions.create({
-      model: modelName, 
+      model: modelName,
       messages: userContext,
       max_tokens: 1000,
       temperature: 0.9,
@@ -539,7 +548,6 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
-    
     userContext.push({ role: 'assistant', content: botResponse });
     if (userContext.length > 4) {
       userContext = userContext.slice(-4);
@@ -561,18 +569,8 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
 });
 
 module.exports = openaiRouter;
- 
- 
- 
- 
- 
- 
 
-
-
- 
- 
- /* const express = require('express');
+/* const express = require('express');
 const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models'); 
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
@@ -988,8 +986,4 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
 
 module.exports = openaiRouter; */
 
-
 //ngrok http 3000
-
-
-

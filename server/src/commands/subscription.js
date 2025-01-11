@@ -1,38 +1,39 @@
 const subscriptionDetails = {
-  subscription_free: {
-    name: 'Standart Plan',
+  standart_plan: { // Изменён ключ
+    name: 'Standart Plan', // Сохранено название
     price: '5$',
-    details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW 🚀',
+    details: 'Возможность пользоваться такими моделями GPT, как GPT-3.5 Turbo и GPT-4o-mini 🚀',
     modelLimits: {
-      'GPT-3.5': 50,
+      'GPT-3.5 Turbo': 150,
       'GPT-4o-mini': 50,
-      'GPT-4o': 20,
-      'GPT-o1-mini-NEW': 3,
+      'GPT-4o': 15,
+      'GPT-o1-mini-NEW': 25,
     },
   },
-  subscription_standard: {
+  standard_plus_plan: { // Изменён ключ
     name: 'Standard Plus Plan',
     price: '10$',
     details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW с еще большим количеством запросов 🚀',
     modelLimits: {
-      'GPT-3.5': 100,
-      'GPT-4o-mini': 75,
-      'GPT-4o': 25,
-      'GPT-o1-mini-NEW': 10,
+      'GPT-3.5 Turbo': 300,
+      'GPT-4o-mini': 100,
+      'GPT-4o': 30,
+      'GPT-o1-mini-NEW': 50,
     },
   },
-  subscription_premium: {
+  premium_plan: { // Сохранён ключ
     name: 'Premium Plan',
     price: '25$',
     details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW с еще большим количеством запросов 🚀',
     modelLimits: {
-      'GPT-3.5': 250,
-      'GPT-4o-mini': 100,
+      'GPT-3.5 Turbo': 1000,
+      'GPT-4o-mini': 250,
       'GPT-4o': 50,
-      'GPT-o1-mini-NEW': 25,
+      'GPT-o1-mini-NEW': 75,
     },
   },
 };
+
 
 module.exports = (bot) => {
   // Команда /subscription
@@ -41,9 +42,9 @@ module.exports = (bot) => {
     const options = {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '💵 Standart Plan - 5$', callback_data: 'subscription_free' }],
-          [{ text: '💵 Standard Plus Plan - 10$', callback_data: 'subscription_standard' }],
-          [{ text: '💵 Premium Plan - 25$ ', callback_data: 'subscription_premium' }],
+          [{ text: '💵 Standart Plan - 5$', callback_data: 'standart_plan' }],
+          [{ text: '💵 Standard Plus Plan - 10$', callback_data: 'standard_plus_plan' }],
+          [{ text: '💵 Premium Plan - 25$ ', callback_data: 'premium_plan' }],
         ],
       },
     };
@@ -62,9 +63,9 @@ module.exports = (bot) => {
         const options = {
           reply_markup: {
             inline_keyboard: [
-              [{ text: 'Standart Plan - 5$', callback_data: 'subscription_free' }],
-              [{ text: 'Standard Plus Plan - 10$', callback_data: 'subscription_standard' }],
-              [{ text: 'Premium Plan - 25$', callback_data: 'subscription_premium' }],
+              [{ text: 'Standart Plan - 5$', callback_data: 'standart_plan' }],
+              [{ text: 'Standard Plus Plan - 10$', callback_data: 'standard_plus_plan' }],
+              [{ text: 'Premium Plan - 25$', callback_data: 'premium_plan' }],
             ],
           },
         };
