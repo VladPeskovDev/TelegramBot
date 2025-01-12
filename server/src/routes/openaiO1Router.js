@@ -28,10 +28,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       userContext = [];
     }
 
-  
     if (!userCache) {
-      console.log(`[DEBUG] userCache не найден в Redis, загружаем из БД...`);
-
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -75,7 +72,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
-        modelId: 4, // предполагаем, что ID модели = 4
+        modelId: 4, 
       };
 
       // Сохраняем в основной ключ (TTL=300)
@@ -109,7 +106,6 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
             model_id: userCache.modelId,
           }
         });
-        console.log(`[DEBUG] Sync прошёл успешно (count=${userCache.requestCount})`);
       } catch (err) {
         console.error(`[ERROR] Не удалось sync upsert:`, err.message);
       } finally {

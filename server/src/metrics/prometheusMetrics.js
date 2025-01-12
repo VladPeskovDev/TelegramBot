@@ -1,5 +1,5 @@
 const client = require('prom-client');
-const loggerWinston = require('../utils/loggerWinston'); 
+const loggerWinston = require('./loggerWinston'); 
 
 // Регистр метрик
 const register = new client.Registry();

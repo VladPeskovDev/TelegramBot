@@ -1,11 +1,5 @@
 const express = require('express');
-const {
-  User,
-  UserSubscription,
-  UserModelRequest,
-  Subscription,
-  SubscriptionModelLimit,
-} = require('../../db/models');
+const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models');
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
 const cache = require('../utils/cacheRedis');
@@ -569,6 +563,9 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
 });
 
 module.exports = openaiRouter;
+
+
+
 
 /* const express = require('express');
 const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models'); 

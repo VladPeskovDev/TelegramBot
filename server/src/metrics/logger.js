@@ -2,7 +2,7 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
-const loggerWinston = require('../utils/loggerWinston');
+const loggerWinston = require('./loggerWinston');
 
 // Директория и имя файла для логов
 const logDir = path.join(__dirname, '../../logs');
@@ -25,7 +25,7 @@ let logStream = createLogStream();
 let logger = morgan('combined', { stream: logStream });
 
 // Cron-задача для удаления файла логов каждые 24 часа
-cron.schedule('31 22 * * *', () => {
+cron.schedule('40 12 * * *', () => {
   if (fs.existsSync(logFile)) {
     // Закрываем текущий поток перед удалением файла
     logStream.end(() => {

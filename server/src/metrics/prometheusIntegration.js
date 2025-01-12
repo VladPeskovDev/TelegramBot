@@ -1,6 +1,6 @@
 const { requestCounter, activeUsersGauge, responseTimeHistogram, totalUsersGauge, dailyUsersGauge,  updateMaxOnline 
 } = require('./prometheusMetrics');
-const loggerWinston = require('../utils/loggerWinston'); 
+const loggerWinston = require('./loggerWinston'); 
 const cron = require('node-cron');
 
 // Храним активных пользователей

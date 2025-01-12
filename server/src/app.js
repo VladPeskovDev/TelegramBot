@@ -7,7 +7,7 @@ const openaiO1Router = require('./routes/openaiO1Router');
 const metricsRouter = require('./routes/metricsRouter');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
-const logger = require('./utils/logger');
+const logger = require('./metrics/logger');
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/openaiO1', openaiO1Router);
 app.use('/api/metrics', metricsRouter);
 
-cron.schedule('06 21 * * *', subscription); //00:15
+cron.schedule('06 21 * * *', subscription); //15:00
 
 
 // WebHook 
