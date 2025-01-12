@@ -93,7 +93,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
 
     // (Опционально) синхронизируем каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
-      console.log(`[DEBUG] Кратный 5 запрос => Sync в БД`);
+      //console.log(`[DEBUG] Кратный 5 запрос => Sync в БД`);
       userCache.syncing = true;
       try {
         await UserModelRequest.upsert({
@@ -119,8 +119,8 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
 
     // 5) Формируем контекст + запрос к OpenAI
     userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     // Запрос к OpenAI
@@ -134,8 +134,8 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
 
     // 6) Добавляем ответ бота, снова обрезаем до 2 сообщений
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 2) {
-      userContext = userContext.slice(-2);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     // 7) Сохраняем контекст (TTL=300)

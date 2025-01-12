@@ -108,8 +108,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     }
 
     userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     const response = await openai.chat.completions.create({
@@ -122,8 +122,8 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     await cache.setCache(mainKey, userCache, 300);
@@ -244,8 +244,8 @@ openaiRouter.route('/model4').post(async (req, res) => {
     }
 
     userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     const response = await openai.chat.completions.create({
@@ -258,8 +258,8 @@ openaiRouter.route('/model4').post(async (req, res) => {
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     await cache.setCache(mainKey, userCache, 300);
@@ -521,8 +521,8 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     userContext.push({ role: 'system', content: systemPrompt });
     userContext.push({ role: 'user', content: userMessage });
 
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     // 6) Запрос к OpenAI
@@ -536,8 +536,8 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 4) {
-      userContext = userContext.slice(-4);
+    if (userContext.length > 3) {
+      userContext = userContext.slice(-3);
     }
 
     await cache.setCache(mainKey, userCache, 300);
