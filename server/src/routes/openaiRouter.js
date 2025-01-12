@@ -18,7 +18,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  // Модель + ключи
   const modelName = 'gpt-4o-mini-2024-07-18';
   const mainKey = `user_${chatId}_gpt-4o-mini`;
   const triggerKey = `trigger_${chatId}_gpt-4o-mini`;
@@ -79,9 +78,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
         syncing: false,
         modelId: 3,
       };
-    } else {
-      console.log('✅ Данные пользователя получены из кэша.');
-    }
+    } 
 
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
@@ -94,7 +91,6 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
 
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
-      console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
       await UserModelRequest.upsert(
         {
           user_id: userCache.userId,
@@ -119,7 +115,7 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_tokens: 1250,
+      max_tokens: 1200,
       temperature: 0.7,
     });
 
@@ -218,9 +214,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
         requestCount: currentRequestCount,
         syncing: false,
       };
-    } else {
-      console.log('✅ Данные пользователя получены из кэша.');
-    }
+    } 
 
     // Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
@@ -310,6 +304,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     }
 
     if (!userCache) {
+      //console.log(`[DEBUG] [openaiRouter] Кэш для ${chatId} не найден`);
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
         return res.status(403).json({
@@ -359,9 +354,8 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
         syncing: false,
         modelId: 1,
       };
-    } else {
-      console.log('✅ Данные пользователя получены из кэша.');
-    }
+    } 
+    //else {console.log('✅ Данные пользователя получены из кэша.');}
 
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
@@ -372,6 +366,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     userCache.requestCount += 1;
 
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
+      //console.log('🔄 Синхронизация счётчика с БД (5 запросов)...');
       userCache.syncing = true;
       await UserModelRequest.upsert(
         {
@@ -492,9 +487,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
         requestCount: currentRequestCount,
         syncing: false,
       };
-    } else {
-      console.log('✅ [numerologist] Данные пользователя получены из кэша.');
-    }
+    } 
 
     // 3) Проверка лимита
     if (userCache.requestCount >= userCache.requestsLimit) {
@@ -536,7 +529,7 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_tokens: 1000,
+      max_tokens: 1200,
       temperature: 0.9,
     });
 

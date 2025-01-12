@@ -8,14 +8,25 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(models.Payment, { foreignKey: 'user_id', as: 'payments' });
     }
   }
-  User.init({
-    telegram_id: DataTypes.BIGINT,
-    username: DataTypes.STRING,
-    first_name: DataTypes.STRING,
-    last_name: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+  User.init(
+    {
+      telegram_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+      },
+      username: DataTypes.STRING,
+      first_name: DataTypes.STRING,
+      last_name: DataTypes.STRING,
+    },
+    {
+      sequelize,
+      modelName: 'User',
+      indexes: [
+        {
+          fields: ['telegram_id'], // Индекс на telegram_id
+        },
+      ],
+    }
+  );
   return User;
 };

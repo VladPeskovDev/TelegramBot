@@ -10,9 +10,8 @@ const redis = new Redis({
   showFriendlyErrorStack: true,
 });
 
-/**
- * Создаем отдельный клиент для подписок (истечение ключей)
- */
+// Создаем отдельный клиент для подписок (истечение ключей)
+ 
 const sub = new Redis({
   host: '127.0.0.1',
   port: 6379,
@@ -21,9 +20,8 @@ const sub = new Redis({
   showFriendlyErrorStack: true,
 });
 
-/**
- * 📥 Получение данных из Redis по ключу
- */
+// 📥 Получение данных из Redis по ключу
+ 
 async function getCache(key) {
   try {
     const data = await redis.get(key);
@@ -36,9 +34,8 @@ async function getCache(key) {
   }
 }
 
-/**
- * 📤 Сохранение данных в Redis
- */
+// 📤 Сохранение данных в Redis
+ 
 async function setCache(key, value, ttl = 300) {
   try {
     const str = JSON.stringify(value);
@@ -51,9 +48,8 @@ async function setCache(key, value, ttl = 300) {
   }
 }
 
-/**
- * 🗑 Удаление ключа
- */
+// 🗑 Удаление ключа
+ 
 async function delCache(key) {
   try {
     const result = await redis.del(key);
@@ -65,9 +61,8 @@ async function delCache(key) {
   }
 }
 
-/**
- * 🧹 Полная очистка (flush) Redis
- */
+// 🧹 Полная очистка (flush) Redis
+ 
 async function flushAll() {
   try {
     await redis.flushall();
@@ -77,9 +72,8 @@ async function flushAll() {
   }
 }
 
-/**
- * 🔍 Проверка существования ключа
- */
+// 🔍 Проверка существования ключа
+ 
 async function hasCache(key) {
   try {
     const exists = await redis.exists(key);
@@ -90,9 +84,8 @@ async function hasCache(key) {
   }
 }
 
-/**
- * ⏳ Узнать TTL ключа
- */
+// ⏳ Узнать TTL ключа
+ 
 async function getTTL(key) {
   try {
     const ttl = await redis.ttl(key);
@@ -103,9 +96,8 @@ async function getTTL(key) {
   }
 }
 
-/**
- * 📊 Статистика Redis
- */
+// 📊 Статистика Redis
+ 
 async function logCacheStats() {
   try {
     const memoryInfo = await redis.info('memory');
@@ -115,9 +107,8 @@ async function logCacheStats() {
   }
 }
 
-/**
- * 🚦 Закрыть соединения
- */
+// 🚦 Закрыть соединения
+ 
 async function closeConnection() {
   try {
     await redis.quit();
@@ -128,9 +119,8 @@ async function closeConnection() {
   }
 }
 
-/**
- * 🛡️ Подписка на события истечения TTL
- */
+// 🛡️ Подписка на события истечения TTL
+ 
 async function subscribeToExpirations() {
   try {
     // Пробуем активировать уведомления (Ex)
@@ -196,7 +186,6 @@ async function subscribeToExpirations() {
       // 2) Если истёк сам user_{...}, можно тоже что-то делать
       if (expiredKey.startsWith('user_')) {
         console.log(`[DEBUG] [cacheRedis] userKey="${expiredKey}" истёк окончательно.`);
-        // Обычно тут уже нет смысла что-то читать: ключ удалён.
       }
     });
   } catch (error) {

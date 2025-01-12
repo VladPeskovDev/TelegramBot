@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'SubscriptionModelLimit',
+      indexes: [
+        {
+          fields: ['subscription_id', 'model_id'], // Индекс на subscription_id и model_id
+        },
+      ],
     }
   );
   return SubscriptionModelLimit;
