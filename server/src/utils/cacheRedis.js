@@ -36,7 +36,7 @@ async function getCache(key) {
 
 // 📤 Сохранение данных в Redis
  
-async function setCache(key, value, ttl = 300) {
+async function setCache(key, value, ttl = 360) {
   try {
     const str = JSON.stringify(value);
     await redis.set(key, str, 'EX', ttl);

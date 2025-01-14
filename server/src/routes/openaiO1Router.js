@@ -6,8 +6,8 @@ require('dotenv').config();
 
 const openaiO1Router = express.Router();
 
-const MAIN_KEY_TTL = 300;     
-const TRIGGER_KEY_TTL = 298;  
+const MAIN_KEY_TTL = 360;     
+const TRIGGER_KEY_TTL = 358;  
 
 openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
   const { chatId, userMessage } = req.body;
@@ -75,9 +75,9 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
         modelId: 4, 
       };
 
-      // Сохраняем в основной ключ (TTL=300)
+      // Сохраняем в основной ключ (TTL=360)
       await cache.setCache(mainKey, userCache, MAIN_KEY_TTL);
-      // Ставим/обновляем триггер-ключ (TTL=298)
+      // Ставим/обновляем триггер-ключ (TTL=358)
       await cache.setCache(triggerKey, '1', TRIGGER_KEY_TTL);
 
     } 
@@ -138,7 +138,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       userContext = userContext.slice(-3);
     }
 
-    // 7) Сохраняем контекст (TTL=300)
+    // 7) Сохраняем контекст (TTL=360)
     await cache.setCache(contextKey, userContext, MAIN_KEY_TTL);
 
     // (Опционально) Кэшируем сам ответ

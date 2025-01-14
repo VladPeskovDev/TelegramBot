@@ -259,7 +259,7 @@ module.exports = {
         {
           subscription_id: 5, // Numerologist Standart Plan
           model_id: 1,
-          requests_limit: 0,
+          requests_limit: 75,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -273,28 +273,28 @@ module.exports = {
         {
           subscription_id: 5,
           model_id: 3,
-          requests_limit: 0,
+          requests_limit: 25,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 5,
           model_id: 4, // o1-mini-2024-09-12
-          requests_limit: 5,
+          requests_limit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 5,
           model_id: 5, // Numerologist
-          requests_limit: 30,
+          requests_limit: 25,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 6, // Numerologist Standart Plus Plan
           model_id: 1,
-          requests_limit: 0,
+          requests_limit: 100,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -308,7 +308,7 @@ module.exports = {
         {
           subscription_id: 6, // Numerologist Standart Plus Plan
           model_id: 3,
-          requests_limit: 0,
+          requests_limit: 50,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
