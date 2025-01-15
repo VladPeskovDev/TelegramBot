@@ -22,7 +22,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/openaiO1', openaiO1Router);
 app.use('/api/metrics', metricsRouter);
 
-cron.schedule('51 00 * * *', subscription); //15:00
+cron.schedule('33 00 * * *', subscription); //15:00
 
 
 // WebHook 

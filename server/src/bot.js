@@ -46,7 +46,7 @@ setupTermsCommand(bot);
 integratePrometheusMetrics(bot);
 
 
-console.log('Бот настроен для работы с WebHook.');
+//console.log('Бот настроен для работы с WebHook.');
 
 module.exports = bot;
 
