@@ -133,7 +133,7 @@ module.exports = {
         {
           subscription_id: 1, // Free Plan
           model_id: 3, // gpt-4o-mini-2024-07-18
-          requests_limit: 25,
+          requests_limit: 35,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -147,7 +147,7 @@ module.exports = {
         {
           subscription_id: 1, // Free Plan
           model_id: 5, // numerolog
-          requests_limit: 0,
+          requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -182,7 +182,7 @@ module.exports = {
         {
           subscription_id: 2,
           model_id: 5, // numerolog
-          requests_limit: 0,
+          requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -217,7 +217,7 @@ module.exports = {
         {
           subscription_id: 3, // Standart Plus Plan
           model_id: 5, // numerologist
-          requests_limit: 0,
+          requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -245,7 +245,7 @@ module.exports = {
         {
           subscription_id: 4, // Premium Plan
           model_id: 4, // o1-mini-2024-09-12
-          requests_limit: 25,
+          requests_limit: 75,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -287,7 +287,7 @@ module.exports = {
         {
           subscription_id: 5,
           model_id: 5, // Numerologist
-          requests_limit: 25,
+          requests_limit: 15,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -322,7 +322,7 @@ module.exports = {
         {
           subscription_id: 6, // Numerologist Standart Plus Plan
           model_id: 5,
-          requests_limit: 0,
+          requests_limit: 30,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
