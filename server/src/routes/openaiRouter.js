@@ -126,13 +126,13 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
       userContext = userContext.slice(-3);
     }
 
-    await cache.setCache(mainKey, userCache, 360);
-    await cache.setCache(triggerKey, '1', 358);
-    await cache.setCache(contextKey, userContext, 360);
+    await cache.setCache(mainKey, userCache, 450);
+    await cache.setCache(triggerKey, '1', 448);
+    await cache.setCache(contextKey, userContext, 450);
 
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
-      await cache.setCache(respKey, botResponse, 360);
+      await cache.setCache(respKey, botResponse, 450);
     }
 
     res.json({ reply: botResponse });
@@ -262,14 +262,14 @@ openaiRouter.route('/model4').post(async (req, res) => {
       userContext = userContext.slice(-3);
     }
 
-    await cache.setCache(mainKey, userCache, 360);
-    await cache.setCache(triggerKey, '1', 358);
+    await cache.setCache(mainKey, userCache, 450);
+    await cache.setCache(triggerKey, '1', 448);
 
-    await cache.setCache(contextKey, userContext, 360);
+    await cache.setCache(contextKey, userContext, 450);
 
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
-      await cache.setCache(respKey, botResponse, 360);
+      await cache.setCache(respKey, botResponse, 450);
     }
 
     res.json({ reply: botResponse });
@@ -403,13 +403,13 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       userContext = userContext.slice(-2);
     }
 
-    await cache.setCache(mainKey, userCache, 360);
-    await cache.setCache(triggerKey, '1', 358);
-    await cache.setCache(contextKey, userContext, 360);
+    await cache.setCache(mainKey, userCache, 450);
+    await cache.setCache(triggerKey, '1', 448);
+    await cache.setCache(contextKey, userContext, 450);
 
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
-      await cache.setCache(respKey, botResponse, 360);
+      await cache.setCache(respKey, botResponse, 450);
     }
 
     res.json({ reply: botResponse });
@@ -540,13 +540,13 @@ openaiRouter.route('/numerologist').post(async (req, res) => {
       userContext = userContext.slice(-3);
     }
 
-    await cache.setCache(mainKey, userCache, 360);
-    await cache.setCache(triggerKey, '1', 358);
-    await cache.setCache(contextKey, userContext, 360);
+    await cache.setCache(mainKey, userCache, 450);
+    await cache.setCache(triggerKey, '1', 448);
+    await cache.setCache(contextKey, userContext, 450);
 
     if (botResponse.length <= 5000) {
       const respKey = `response_${chatId}_${userMessage}`;
-      await cache.setCache(respKey, botResponse, 360);
+      await cache.setCache(respKey, botResponse, 450);
     }
     res.json({ reply: botResponse });
   } catch (error) {

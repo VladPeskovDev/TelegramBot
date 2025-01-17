@@ -1,13 +1,14 @@
 const express = require('express');
-const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models');
+const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit,
+} = require('../../db/models');
 const openai = require('../utils/openai');
-const cache = require('../utils/cacheRedis'); 
+const cache = require('../utils/cacheRedis');
 require('dotenv').config();
 
 const openaiO1Router = express.Router();
 
-const MAIN_KEY_TTL = 360;     
-const TRIGGER_KEY_TTL = 358;  
+const MAIN_KEY_TTL = 450;
+const TRIGGER_KEY_TTL = 448;
 
 openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
   const { chatId, userMessage } = req.body;
@@ -51,14 +52,14 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       const subscriptionPlanId = activeSubscription.subscription.id;
 
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
-        where: { 
+        where: {
           subscription_id: subscriptionPlanId,
-          model_id: 4, 
+          model_id: 4,
         },
       });
 
       const userModelRequest = await UserModelRequest.findOne({
-        where: { 
+        where: {
           user_id: user.id,
           model_id: 4,
         },
@@ -72,15 +73,14 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
         requestsLimit: subscriptionLimit.requests_limit,
         requestCount: currentRequestCount,
         syncing: false,
-        modelId: 4, 
+        modelId: 4,
       };
 
-      // Сохраняем в основной ключ (TTL=360)
+      // Сохраняем в основной ключ (TTL=450)
       await cache.setCache(mainKey, userCache, MAIN_KEY_TTL);
-      // Ставим/обновляем триггер-ключ (TTL=358)
+      // Ставим/обновляем триггер-ключ (TTL=448)
       await cache.setCache(triggerKey, '1', TRIGGER_KEY_TTL);
-
-    } 
+    }
     // 3) Проверяем лимит
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
@@ -96,16 +96,19 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       //console.log(`[DEBUG] Кратный 5 запрос => Sync в БД`);
       userCache.syncing = true;
       try {
-        await UserModelRequest.upsert({
-          user_id: userCache.userId,
-          model_id: userCache.modelId,
-          request_count: userCache.requestCount,
-        }, {
-          where: {
+        await UserModelRequest.upsert(
+          {
             user_id: userCache.userId,
             model_id: userCache.modelId,
-          }
-        });
+            request_count: userCache.requestCount,
+          },
+          {
+            where: {
+              user_id: userCache.userId,
+              model_id: userCache.modelId,
+            },
+          },
+        );
       } catch (err) {
         console.error(`[ERROR] Не удалось sync upsert:`, err.message);
       } finally {
@@ -127,7 +130,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_completion_tokens: 1500,
+      max_completion_tokens: 1200,
     });
 
     const botResponse = response?.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
@@ -138,10 +141,10 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
       userContext = userContext.slice(-3);
     }
 
-    // 7) Сохраняем контекст (TTL=360)
+    // 7) Сохраняем контекст (TTL=450)
     await cache.setCache(contextKey, userContext, MAIN_KEY_TTL);
 
-    // (Опционально) Кэшируем сам ответ
+    //  Кэшируем сам ответ
     if (botResponse.length <= 5000) {
       const responseKey = `response_${chatId}_${userMessage}`;
       await cache.setCache(responseKey, botResponse, MAIN_KEY_TTL);
@@ -155,10 +158,6 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
 });
 
 module.exports = openaiO1Router;
-
-
-
-
 
 /*  
 const express = require('express');
