@@ -232,26 +232,27 @@ module.exports = (bot) => {
         const botResponse = response.data.reply || 'Нет ответа...';
 
         if (botResponse.length <= 4000) {
-          return bot.sendMessage(
-            chatId,
-            `🔮 *Ответ:* \n${botResponse}`,
-            { parse_mode: 'Markdown' }
-          );
+          // Проверяем, содержит ли ответ код
+          const formattedResponse = botResponse.includes('```')
+            ? botResponse
+            : `\`\`\`\n${botResponse}\n\`\`\``; // Обрамляем ответ в блок кода, если код не выделен
+        
+          bot.sendMessage(chatId, `🤖 *Ответ:* \n${formattedResponse}`, {
+            parse_mode: 'MarkdownV2',
+          });
         } else {
           const buffer = Buffer.from(botResponse, 'utf8');
-          return bot.sendDocument(
+          await bot.sendDocument(
             chatId,
             buffer,
             {
               caption: 'Ответ слишком большой, поэтому во вложении:',
               parse_mode: 'Markdown',
             },
-            {
-              filename: 'reply.txt',
-              contentType: 'text/plain',
-            }
+            { filename: 'reply.txt', contentType: 'text/plain' }
           );
         }
+        
       } catch (error) {
         console.error('❌ Ошибка при обработке сообщения (нумерология):', error);
         return bot.sendMessage(
