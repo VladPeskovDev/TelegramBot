@@ -25,7 +25,7 @@ let logStream = createLogStream();
 let logger = morgan('combined', { stream: logStream });
 
 // Cron-задача для удаления файла логов каждые 24 часа
-cron.schedule('40 12 * * *', () => {
+cron.schedule('35 00 * * *', () => {
   if (fs.existsSync(logFile)) {
     // Закрываем текущий поток перед удалением файла
     logStream.end(() => {
@@ -50,4 +50,4 @@ cron.schedule('40 12 * * *', () => {
 // Middleware для экспорта (чтобы обновлённый logger всегда использовался)
 module.exports = (req, res, next) => {
   logger(req, res, next);
-};
+}; 

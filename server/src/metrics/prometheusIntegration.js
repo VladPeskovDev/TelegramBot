@@ -4,11 +4,11 @@ const loggerWinston = require('./loggerWinston');
 const cron = require('node-cron');
 
 // Храним активных пользователей
-const activeUsers = new Map(); // Изменено с Set на Map для удобства работы с lastActivity
+const activeUsers = new Map(); 
 const dailyUsers = new Set();
 
 // Устанавливаем cron-задачу на сброс метрик ежедневных пользователей
-cron.schedule('14 21 * * *', () => {
+cron.schedule('30 00 * * *', () => {
   loggerWinston.info('🕒 [CRON JOB] Сброс метрик: bot_daily_users и bot_total_users');
   
   // Сбрасываем метрику уникальных пользователей за сутки
