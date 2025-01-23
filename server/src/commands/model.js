@@ -1,5 +1,4 @@
 const axios = require('../utils/axiosInstance');
-
 const userModels = {}; 
 const DEFAULT_MODEL = { modelName: 'GPT-3.5 Turbo', endpoint: '/api/openai/model3.5' };
 const userState = {};                 

@@ -1,7 +1,6 @@
 const Redis = require('ioredis');
 const { UserModelRequest } = require('../../db/models');
 
-
 const redis = new Redis({
   host: '127.0.0.1', 
   port: 6379,
@@ -25,7 +24,7 @@ const sub = new Redis({
 async function getCache(key) {
   try {
     const data = await redis.get(key);
-    // Для отладки можно включить лог:
+    // Для отладки лог:
     // console.log(`[DEBUG] getCache(${key}) =>`, data ? data.slice(0, 80) : 'NULL');
     return data ? JSON.parse(data) : null;
   } catch (error) {
@@ -34,7 +33,7 @@ async function getCache(key) {
   }
 }
 
-// 📤 Сохранение данных в Redis
+//Сохранение данных в Redis
  
 async function setCache(key, value, ttl = 450) {
   try {
@@ -48,7 +47,7 @@ async function setCache(key, value, ttl = 450) {
   }
 }
 
-// 🗑 Удаление ключа
+//Удаление ключа
  
 async function delCache(key) {
   try {
@@ -61,7 +60,7 @@ async function delCache(key) {
   }
 }
 
-// 🧹 Полная очистка (flush) Redis
+//Полная очистка (flush) Redis
  
 async function flushAll() {
   try {
@@ -72,7 +71,7 @@ async function flushAll() {
   }
 }
 
-// 🔍 Проверка существования ключа
+// Проверка существования ключа
  
 async function hasCache(key) {
   try {
@@ -84,7 +83,7 @@ async function hasCache(key) {
   }
 }
 
-// ⏳ Узнать TTL ключа
+// Узнать TTL ключа
  
 async function getTTL(key) {
   try {
@@ -96,7 +95,7 @@ async function getTTL(key) {
   }
 }
 
-// 📊 Статистика Redis
+//Статистика Redis
  
 async function logCacheStats() {
   try {
@@ -107,7 +106,6 @@ async function logCacheStats() {
   }
 }
 
-// 🚦 Закрыть соединения
  
 async function closeConnection() {
   try {
@@ -119,11 +117,8 @@ async function closeConnection() {
   }
 }
 
-// 🛡️ Подписка на события истечения TTL
- 
 async function subscribeToExpirations() {
   try {
-    // Пробуем активировать уведомления (Ex)
     try {
       await sub.config('SET', 'notify-keyspace-events', 'Ex');
       console.log('✅ [cacheRedis] notify-keyspace-events = Ex установлено.');
@@ -131,7 +126,7 @@ async function subscribeToExpirations() {
       console.warn(`⚠️ [cacheRedis] Не удалось выполнить CONFIG SET: ${err.message}`);
     }
 
-    // Подписываемся на канал истечения ключей
+    
     sub.subscribe('__keyevent@0__:expired', (err, count) => {
       if (err) {
         console.error('❌ [cacheRedis] Ошибка при подписке expired:', err.message);
@@ -140,24 +135,22 @@ async function subscribeToExpirations() {
       }
     });
 
-    // Когда ключ истёк
+    
     sub.on('message', async (channel, expiredKey) => {
       //console.log(`[DEBUG] [cacheRedis] Событие expired: ключ="${expiredKey}"`);
 
-      // 1) Если это триггер-ключ
       if (expiredKey.startsWith('trigger_')) {
         const chatIdPart = expiredKey.replace('trigger_', '');
         const mainKey = `user_${chatIdPart}`;
 
-        console.log(`[DEBUG] [cacheRedis] Триггер истёк. Попробуем прочитать ${mainKey}...`);
+        //console.log(`[DEBUG] [cacheRedis] Триггер истёк. Попробуем прочитать ${mainKey}...`);
 
         const mainVal = await redis.get(mainKey);
         if (mainVal) {
-          // Успели застать основной ключ
-          console.log(`[DEBUG] [cacheRedis] mainKey="${mainKey}" ещё жив => делаем upsert в БД...`);
+          //console.log(`[DEBUG] [cacheRedis] mainKey="${mainKey}" ещё жив => делаем upsert в БД...`);
           try {
             const userCache = JSON.parse(mainVal);
-            // Проверим, есть ли нужные поля
+            // проверка на поля
             if (userCache.userId && userCache.modelId !== undefined && userCache.requestCount !== undefined) {
               await UserModelRequest.upsert({
                 user_id: userCache.userId,
@@ -169,7 +162,7 @@ async function subscribeToExpirations() {
                   model_id: userCache.modelId,
                 }
               });
-              console.log(`[DEBUG] [cacheRedis] Синхронизация прошла успешно (mainKey="${mainKey}").`);
+              //console.log(`[DEBUG] [cacheRedis] Синхронизация прошла успешно (mainKey="${mainKey}").`);
             } else {
               console.warn(`[WARN] [cacheRedis] mainKey="${mainKey}" не содержит нужных полей. Данные:`, userCache);
             }
@@ -183,9 +176,8 @@ async function subscribeToExpirations() {
         }
       }
 
-      // 2) Если истёк сам user_{...}, можно тоже что-то делать
       if (expiredKey.startsWith('user_')) {
-        console.log(`[DEBUG] [cacheRedis] userKey="${expiredKey}" истёк окончательно.`);
+        //console.log(`[DEBUG] [cacheRedis] userKey="${expiredKey}" истёк окончательно.`);
       }
     });
   } catch (error) {
@@ -193,7 +185,6 @@ async function subscribeToExpirations() {
   }
 }
 
-/** Инициализируем подписку сразу при загрузке */
 (async () => {
   await subscribeToExpirations();
 })();

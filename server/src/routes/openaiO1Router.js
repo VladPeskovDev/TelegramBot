@@ -91,7 +91,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
     // 4) Увеличиваем счётчик
     userCache.requestCount += 1;
 
-    // (Опционально) синхронизируем каждые 5 запросов
+    // синхронизируем каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       //console.log(`[DEBUG] Кратный 5 запрос => Sync в БД`);
       userCache.syncing = true;

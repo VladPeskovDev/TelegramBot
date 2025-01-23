@@ -1,10 +1,9 @@
 const client = require('prom-client');
-const loggerWinston = require('./loggerWinston'); 
+//const loggerWinston = require('./loggerWinston'); 
 
-// Регистр метрик
+
 const register = new client.Registry();
 
-// Настраиваем метрики
 const requestCounter = new client.Counter({
   name: 'bot_requests_total',
   help: 'Общее количество запросов к боту',
@@ -25,7 +24,7 @@ const responseTimeHistogram = new client.Histogram({
 
 const totalUsersGauge = new client.Gauge({
   name: 'bot_total_users',
-  help: 'Количество пользователей за сутки', // Изменяем описание
+  help: 'Количество пользователей за сутки', 
 });
 
 const maxOnlineGauge = new client.Gauge({
@@ -38,19 +37,19 @@ const dailyUsersGauge = new client.Gauge({
   help: 'Количество уникальных пользователей за сутки',
 });
 
-// Переменная для хранения текущего максимального онлайна
+// Переменная для  текущего макс онлайна
 let maxOnlineUsers = 0;
 
-// Обновляем метрику максимального онлайна
+// метрика макс онлайна
 function updateMaxOnline(currentOnline) {
   if (currentOnline > maxOnlineUsers) {
     maxOnlineUsers = currentOnline;
     maxOnlineGauge.set(maxOnlineUsers); 
-    loggerWinston.info(`📈 Обновлен максимальный онлайн: ${maxOnlineUsers}`);
+    //loggerWinston.info(`📈 Обновлен максимальный онлайн: ${maxOnlineUsers}`);
   }
 }
 
-// Регистрируем метрики
+
 register.registerMetric(requestCounter);
 register.registerMetric(activeUsersGauge);
 register.registerMetric(responseTimeHistogram);
@@ -58,7 +57,7 @@ register.registerMetric(totalUsersGauge);
 register.registerMetric(maxOnlineGauge);
 register.registerMetric(dailyUsersGauge);
 
-// Экспортируем метрики и регистр
+
 module.exports = {
   requestCounter,
   activeUsersGauge,

@@ -3,31 +3,29 @@ const { requestCounter, activeUsersGauge, responseTimeHistogram, totalUsersGauge
 const loggerWinston = require('./loggerWinston'); 
 const cron = require('node-cron');
 
-// Храним активных пользователей
 const activeUsers = new Map(); 
 const dailyUsers = new Set();
 
-// Устанавливаем cron-задачу на сброс метрик ежедневных пользователей
 cron.schedule('30 00 * * *', () => {
   loggerWinston.info('🕒 [CRON JOB] Сброс метрик: bot_daily_users и bot_total_users');
   
-  // Сбрасываем метрику уникальных пользователей за сутки
+  //уникальне сутки
   dailyUsersGauge.set(0);
   dailyUsers.clear();
   loggerWinston.info('✅ Метрика bot_daily_users сброшена.');
 
-  // Сбрасываем общее количество пользователей за сутки
+  //общее число пользователей за сутки
   totalUsersGauge.set(0);
   loggerWinston.info('✅ Метрика bot_total_users сброшена.');
 });
 
-// Удаление неактивных пользователей каждые 10 секунд
+// Удаление неактивных 15 секунд
 setInterval(() => {
   const now = Date.now();
   let usersRemoved = 0;
 
   activeUsers.forEach((lastActivity, chatId) => {
-    if (now - lastActivity > 10000) { // 10 секунд с последней активности
+    if (now - lastActivity > 15000) { 
       activeUsers.delete(chatId);
       usersRemoved++;
     }
@@ -36,11 +34,11 @@ setInterval(() => {
   // Обновляем метрику активных пользователей
   activeUsersGauge.set(activeUsers.size);
 
-  // Логируем удаление пользователей
+  
   if (usersRemoved > 0) {
     //loggerWinston.info(`❌ ${usersRemoved} пользователь(-я/-ей) удалено из активных.`);
   }
-}, 10000);
+}, 15000);
 
 module.exports = (bot) => {
   bot.on('message', async (msg) => {
@@ -49,31 +47,27 @@ module.exports = (bot) => {
 
     // Добавляем или обновляем активного пользователя
     activeUsers.set(chatId, startTime);
-    activeUsersGauge.set(activeUsers.size); // Обновляем Gauge
+    activeUsersGauge.set(activeUsers.size); 
 
-    // Логируем добавление активного пользователя
     //loggerWinston.info(`👤 Пользователь ${chatId} добавлен или обновлён в активных.`);
 
-    // Добавляем пользователя в список уникальных за сутки
     if (!dailyUsers.has(chatId)) {
       dailyUsers.add(chatId);
       dailyUsersGauge.set(dailyUsers.size); // Обновляем Gauge
       //loggerWinston.info(`📅 Уникальный пользователь за сутки: ${chatId}`);
     }
 
-    // Увеличиваем метрику общего числа пользователей за сутки
+    
     totalUsersGauge.inc();
     //loggerWinston.info('📊 Общая метрика bot_total_users увеличена.');
 
     // Обновляем максимальный онлайн
-    updateMaxOnline(activeUsers.size); // Передаём корректное значение
+    updateMaxOnline(activeUsers.size); 
     
 
     try {
-      // Логика обработки сообщений
       requestCounter.inc({ endpoint: 'message' });
     } finally {
-      // Логируем время обработки
       const responseTime = (Date.now() - startTime) / 1000;
       responseTimeHistogram.observe({ endpoint: 'message' }, responseTime);
       //loggerWinston.info(`⏳ Время обработки сообщения: ${responseTime} сек.`);
@@ -85,7 +79,6 @@ module.exports = (bot) => {
     const chatId = String(callbackQuery.message.chat.id);
     const startTime = Date.now();
 
-    // Логика обработки callback-запросов
     try {
       requestCounter.inc({ endpoint: 'callback_query' });
       //loggerWinston.info(`📥 Callback запрос обработан для пользователя: ${chatId}`);

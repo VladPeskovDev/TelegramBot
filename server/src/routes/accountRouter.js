@@ -5,7 +5,6 @@ const { ru } = require('date-fns/locale');
 
 const accountRouter = express.Router();
 
-
 accountRouter.route('/').post(async (req, res) => {
   const { chatId } = req.body;
 
