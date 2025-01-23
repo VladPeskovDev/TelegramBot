@@ -1,4 +1,4 @@
-const morgan = require('morgan');
+/* const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
@@ -49,4 +49,4 @@ cron.schedule('35 00 * * *', () => {
 
 module.exports = (req, res, next) => {
   logger(req, res, next);
-}; 
+}; */

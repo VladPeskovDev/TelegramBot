@@ -7,11 +7,11 @@ const openaiO1Router = require('./routes/openaiO1Router');
 const metricsRouter = require('./routes/metricsRouter');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
-const logger = require('./metrics/logger');
+//const logger = require('./metrics/logger');
 
 const app = express();
 
-app.use(logger);
+//app.use(logger);
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

@@ -4,7 +4,7 @@ const getSystemStats = require('../metrics/systemStats');
 
 const metricsRouter = express.Router();
 
-// Эндпоинт для метрик Prometheus
+
 metricsRouter.route('/').get(async (req, res) => {
   try {
     res.set('Content-Type', register.contentType);
@@ -14,7 +14,7 @@ metricsRouter.route('/').get(async (req, res) => {
   }
 });
 
-// Эндпоинт для системных статусов
+
 metricsRouter.route('/system-stats').get((req, res) => {
   const stats = getSystemStats();
   res.json(stats);

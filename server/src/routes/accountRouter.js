@@ -13,14 +13,13 @@ accountRouter.route('/').post(async (req, res) => {
   }
 
   try {
-    // Получаем информацию о пользователе
     const user = await User.findOne({ where: { telegram_id: chatId } });
 
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден.' });
     }
 
-    // Получаем активную подписку пользователя
+  
     const activeSubscription = await UserSubscription.findOne({
       where: { user_id: user.id },
       include: [{ model: Subscription, as: 'subscription' }],
@@ -37,20 +36,19 @@ accountRouter.route('/').post(async (req, res) => {
       });
     }
 
-    // Форматируем дату окончания подписки
+    
     const formattedEndDate = format(
       new Date(activeSubscription.end_date),
       'd MMMM yyyy г.',
       { locale: ru }
     );
 
-    // Получаем лимиты запросов по всем моделям для текущей подписки
+  
     const subscriptionLimits = await SubscriptionModelLimit.findAll({
       where: { subscription_id: activeSubscription.subscription_id },
       include: [{ model: GPTModel, as: 'model' }],
     });
 
-    // Собираем данные о моделях и оставшихся запросах
     const models = [];
     for (const limit of subscriptionLimits) {
       const userModelRequest = await UserModelRequest.findOne({
@@ -69,7 +67,6 @@ accountRouter.route('/').post(async (req, res) => {
       });
     }
 
-    // Формируем ответ
     res.status(200).json({
       firstName: user.first_name,
       lastName: user.last_name,

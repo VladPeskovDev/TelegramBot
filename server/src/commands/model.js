@@ -18,15 +18,10 @@ function showMainMenu(bot, chatId, messageId) {
   });
 }
 
-
 module.exports = (bot) => {
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1. Команда /model: выбор между GPT и Личным нумерологом
-  // ───────────────────────────────────────────────────────────────────────────
   bot.onText(/\/model/, (msg) => {
     const chatId = String(msg.chat.id);
 
-    // Сбрасываем состояние — пусть заново выбирает
     userState[chatId] = null;
     userNumerologyChoices[chatId] = null;
     userNumerologyRes[chatId] = null;
@@ -43,11 +38,8 @@ module.exports = (bot) => {
     bot.sendMessage(chatId, 'Выберите режим работы:', options);
   });
 
-  // ───────────────────────────────────────────────────────────────────────────
   // 2. Обработка callback_query при выборе /model
-  //    - Если GPT, то показываем список GPT-моделей (3.5, 4.0 и т.д.)
-  //    - Если Нумеролог, то переходим к состоянию "numerologist" и показываем 4 типа раскладов
-  // ───────────────────────────────────────────────────────────────────────────
+  
   bot.on('callback_query', async (callbackQuery) => {
     const chatId = String(callbackQuery.message.chat.id);
     const messageId = callbackQuery.message.message_id;
@@ -58,7 +50,6 @@ module.exports = (bot) => {
       return showMainMenu(bot, chatId, messageId);
     }
 
-    // Обработка основного выбора: GPT или Нумеролог
     if (data === 'GPT_MAIN_CHOICE') {
       userState[chatId] = 'gpt';
       return bot.editMessageText('Выберите модель GPT:', {
@@ -129,9 +120,6 @@ module.exports = (bot) => {
       );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 2.1. Если пользователь уже в состоянии GPT и выбирает конкретную модель
-    // ─────────────────────────────────────────────────────────────────────────
     if (userState[chatId] === 'gpt') {
       let endpoint;
       switch (data) {
@@ -164,9 +152,6 @@ module.exports = (bot) => {
       );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 2.2. Если пользователь в состоянии нумерологии — 4 вида раскладов
-    // ─────────────────────────────────────────────────────────────────────────
     if (userState[chatId] === 'numerologist') {
       let choiceText = '';
       let resText = '';
@@ -209,11 +194,7 @@ module.exports = (bot) => {
     }
   });
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Обработка входящих сообщений
-  //    Если пользователь выбрал нумерологию (userState[chatId] === 'numerologist'),
-  //    то отрабатываем логику нумерологии. В противном случае — GPT.
-  // ───────────────────────────────────────────────────────────────────────────
+ 
   bot.on('message', async (msg) => {
     const chatId = String(msg.chat.id);
     const userMessage = msg.text;
@@ -233,7 +214,6 @@ module.exports = (bot) => {
         const botResponse = response.data.reply || 'Нет ответа...';
 
         if (botResponse.length <= 4000) {
-          // Проверяем, содержит ли ответ код
           const formattedResponse = botResponse.includes('```')
             ? botResponse
             : `\`\`\`\n${botResponse}\n\`\`\``; // Обрамляем ответ в блок кода, если код не выделен
@@ -271,7 +251,7 @@ module.exports = (bot) => {
 
     const userModel = userModels[chatId] || DEFAULT_MODEL;
     if (!userModel) {
-    return; // Если модель не выбрана, ничего не делаем
+    return; 
   }
     let processingMessageId;
     try {
@@ -328,194 +308,11 @@ module.exports = (bot) => {
           console.warn('⚠️ (catch) Не удалось удалить временное сообщение:', delErr.message);
         }
       }
-
       const errorMessage =
         error.response?.data?.error || '❌ *Произошла ошибка. Попробуйте позже.*';
-
       bot.sendMessage(chatId, errorMessage, { parse_mode: 'Markdown' });
     }
   });
 };
 
 
-
-/* 
-const axios = require('../utils/axiosInstance');
-const { userState, userModels } = require('./userState');
-
-module.exports = (bot) => {
-  // 📌 Команда /model
-  bot.onText(/\/model/, (msg) => {
-    const chatId = String(msg.chat.id);
-    userState[chatId] = 'gpt'; // Устанавливаем состояние
-
-    const options = {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🤖 GPT-3.5', callback_data: 'GPT-3.5' }],
-          [{ text: '🧠 GPT-4o', callback_data: 'GPT-4o' }],
-          [{ text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' }],
-          [{ text: '🆕 o1-mini-NEW', callback_data: 'o1-mini-NEW' }],
-        ],
-      },
-    };
-
-    bot.sendMessage(chatId, '🛠 *Выберите модель GPT:*', { parse_mode: 'Markdown', ...options });
-  });
-
-  // 📌 Обработка текстовых сообщений
-  bot.on('message', async (msg) => {
-    const chatId = String(msg.chat.id);
-
-    if (!msg.text || msg.text.startsWith('/')) return;
-    if (userState[chatId] !== 'gpt') return;
-
-    const userMessage = msg.text;
-    const userModel = userModels[chatId] || { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
-
-    try {
-      const response = await axios.post(userModel.endpoint, {
-        chatId,
-        userMessage,
-        modelName: userModel.modelName,
-      });
-
-      bot.sendMessage(chatId, `🤖 *Ответ:* \n${response.data.reply}`, { parse_mode: 'Markdown' });
-
-      // Сброс состояний
-      delete userModels[chatId];
-      delete userState[chatId];
-    } catch (error) {
-      console.error('❌ Ошибка при обработке сообщения:', error);
-      bot.sendMessage(chatId, '❌ *Ошибка обработки.*', { parse_mode: 'Markdown' });
-    }
-  });
-};
-
-
-*/
-
-
-
-
-
-/*
-
-const axios = require('../utils/axiosInstance');
-const { userState, userModels } = require('./userState');
-
-module.exports = (bot) => {
-  // Команда выбора модели
-  bot.onText(/\/model/, (msg) => {
-    const chatId = String(msg.chat.id);
-    userState[chatId] = 'gpt'; // Устанавливаем состояние пользователя
-
-    const options = {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '🤖 GPT-3.5', callback_data: 'GPT-3.5' },
-            { text: '🧠 GPT-4o', callback_data: 'GPT-4o' }
-          ],
-          [
-            { text: '⚡ gpt-4o-mini', callback_data: 'gpt-4o-mini' },
-            { text: '🆕 o1-mini-NEW', callback_data: 'o1-mini-NEW' }
-          ]
-        ]
-      }
-    };
-    
-    bot.sendMessage(chatId, '🛠 *Выберите модель GPT:*', { parse_mode: 'Markdown', ...options });
-  });
-
-  // Обработка выбора модели
-  bot.on('callback_query', async (callbackQuery) => {
-    const chatId = String(callbackQuery.message.chat.id);
-    if (userState[chatId] !== 'gpt') return;
-
-    const chosenModel = callbackQuery.data;
-
-    let endpoint;
-
-    switch (chosenModel) {
-      case 'GPT-3.5':
-        endpoint = '/api/openai/model3.5';
-        break;
-      case 'GPT-4o':
-        endpoint = '/api/openai/model4';
-        break;
-      case 'gpt-4o-mini':
-        endpoint = '/api/openai/model_gpt-4o-mini';
-        break;
-      case 'o1-mini-NEW':
-        endpoint = '/api/openaiO1/model_o1-mini-2024-09-12';
-        break;
-      default:
-        bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Неизвестная модель.' });
-        return;
-    }
-
-    userModels[chatId] = { modelName: chosenModel, endpoint };
-
-    bot.answerCallbackQuery(callbackQuery.id, { text: `✅ Вы выбрали модель ${chosenModel}.` });
-    bot.sendMessage(chatId, `🤖 *Вы успешно переключились на модель ${chosenModel}.*`, { parse_mode: 'Markdown' });
-  });
-
-  // Обработка текстовых сообщений для GPT
-  bot.on('message', async (msg) => {
-    const chatId = String(msg.chat.id);
-    if (userState[chatId] !== 'gpt') return; // Проверяем состояние пользователя
-
-    const userMessage = msg.text;
-    if (!userMessage || userMessage.startsWith('/')) return;
-
-    const userModel = userModels[chatId] || { modelName: 'GPT-3.5', endpoint: '/api/openai/model3.5' };
-
-    let processingMessageId;
-
-    try {
-      const processingMessage = await bot.sendMessage(
-        chatId,
-        '⏳ *Обрабатываем ваш запрос...*',
-        { parse_mode: 'Markdown' }
-      );
-
-      processingMessageId = processingMessage.message_id;
-
-      const response = await axios.post(userModel.endpoint, {
-        chatId,
-        userMessage,
-        modelName: userModel.modelName,
-      });
-
-      const botResponse = response.data.reply;
-
-      await bot.deleteMessage(chatId, processingMessageId);
-
-      if (botResponse.length <= 4000) {
-        bot.sendMessage(chatId, `🤖 *Ответ:* \n${botResponse}`, { parse_mode: 'Markdown' });
-      } else {
-        const buffer = Buffer.from(botResponse, 'utf8');
-        await bot.sendDocument(
-          chatId,
-          buffer,
-          { caption: 'Ответ слишком большой, поэтому во вложении:' },
-          { filename: 'reply.txt', contentType: 'text/plain' }
-        );
-      }
-
-      // Сбрасываем состояние
-      delete userModels[chatId];
-      delete userState[chatId];
-    } catch (error) {
-      console.error('❌ Ошибка при обработке сообщения:', error);
-      await bot.deleteMessage(chatId, processingMessageId);
-      bot.sendMessage(chatId, '❌ *Произошла ошибка. Попробуйте позже.*', { parse_mode: 'Markdown' });
-    }
-  });
-};
-
-
-
-
-*/
