@@ -84,6 +84,8 @@ module.exports = (bot) => {
 
     if (data === 'NUMERO_MAIN_CHOICE') {
       userState[chatId] = 'numerologist';
+      userModels[chatId] = null;
+      //console.log(`User ${chatId} switched to numerologist. GPT model reset.`); 
 
       return bot.editMessageText(
         '🔮 *Вы переключились на модель "Личный нумеролог".* \n\nВыберите один из типов разбора:',
@@ -264,9 +266,13 @@ module.exports = (bot) => {
         delete userNumerologyChoices[chatId];
         delete userNumerologyRes[chatId];
       }
+      return 
     }
 
     const userModel = userModels[chatId] || DEFAULT_MODEL;
+    if (!userModel) {
+    return; // Если модель не выбрана, ничего не делаем
+  }
     let processingMessageId;
     try {
       const processingMessage = await bot.sendMessage(

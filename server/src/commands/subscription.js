@@ -44,7 +44,7 @@ const subscriptionDetails = {
       'GPT-4o-mini': 25,
       'GPT-4o': 0,
       'GPT-o1-mini-NEW': 0,
-      'Numerolog': 25,   //99 рублей 
+      'Numerolog': 20,   //99 рублей 
     },
   },
   subscription_numerolog_premium_plan: { 
