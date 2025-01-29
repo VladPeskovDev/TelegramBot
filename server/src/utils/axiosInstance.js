@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const instance = axios.create({
-  baseURL: process.env.DOMAIN || 'https://1bdf-95-164-12-129.ngrok-free.app',
+  baseURL: process.env.DOMAIN || 'https://tgqueue.ru',
   headers: {
     'Content-Type': 'application/json',
   },

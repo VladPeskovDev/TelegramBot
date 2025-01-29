@@ -33,9 +33,21 @@ module.exports = {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
-      payment_date: {
-        type: Sequelize.DATE,
+      invoice_id: {
+        // Счёт для Robokassa (InvId)
+        type: Sequelize.INTEGER,
         allowNull: false,
+        unique: true,
+      },
+      status: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'pending', // pending | paid | failed | canceled
+      },
+      paid_at: {
+        // дата фактической оплаты
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
@@ -47,7 +59,7 @@ module.exports = {
       },
     });
   },
-  // eslint-disable-next-line no-unused-vars
+  
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Payments');
   },
