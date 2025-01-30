@@ -15,7 +15,7 @@ const integratePrometheusMetrics = require('./metrics/prometheusIntegration');
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: true });
 
 // Устанавливаем WebHook
-const WEBHOOK_URL = `${process.env.DOMAIN}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+const WEBHOOK_URL = `${process.env.DOMAIN || 'https://tgqueue.ru'}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 bot.setWebHook(WEBHOOK_URL)
   .then(() => console.log(`Webhook установлен: ${WEBHOOK_URL}`))
   .catch((err) => console.error('Ошибка при установке Webhook:', err));

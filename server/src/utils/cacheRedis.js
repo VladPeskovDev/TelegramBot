@@ -2,7 +2,7 @@ const Redis = require('ioredis');
 const { UserModelRequest } = require('../../db/models');
 
 const redis = new Redis({
-  host: '127.0.0.1', 
+  host: 'redis-cache', 
   port: 6379,
   password: '0707',  
   db: 0,             
@@ -12,7 +12,7 @@ const redis = new Redis({
 // Создаем отдельный клиент для подписок (истечение ключей)
  
 const sub = new Redis({
-  host: '127.0.0.1',
+  host: 'redis-cache',
   port: 6379,
   password: '0707',
   db: 0,
