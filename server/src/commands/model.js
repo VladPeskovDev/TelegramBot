@@ -1,9 +1,9 @@
 const axios = require('../utils/axiosInstance');
-const userModels = {}; 
+const userModels = {};
 const DEFAULT_MODEL = { modelName: 'GPT-3.5 Turbo', endpoint: '/api/openai/model3.5' };
-const userState = {};                 
-const userNumerologyChoices = {};     
-const userNumerologyRes = {};         
+const userState = {};
+const userNumerologyChoices = {};
+const userNumerologyRes = {};
 
 function escapeHtml(str = '') {
   return str
@@ -25,6 +25,18 @@ function convertMarkdownCodeToHtml(text = '') {
       return `<pre><code>${code}</code></pre>`;
     }
   });
+}
+
+/**
+ * Функция для формирования кнопки выбора модели с индикатором (галочкой),
+ * если модель уже выбрана.
+ * @param {string} modelName - Название модели.
+ * @param {string} selectedModel - Название выбранной модели.
+ * @returns {object} - Объект кнопки для inline‑клавиатуры.
+ */
+function getModelButton(modelName, selectedModel) {
+  const text = modelName === selectedModel ? `✅ ${modelName}` : modelName;
+  return { text, callback_data: modelName };
 }
 
 function showMainMenu(bot, chatId, messageId) {
@@ -72,18 +84,20 @@ module.exports = (bot) => {
 
     if (data === 'GPT_MAIN_CHOICE') {
       userState[chatId] = 'gpt';
+      // Если пользователь уже выбирал модель, берём её название, иначе дефолтное
+      const currentModel = userModels[chatId] ? userModels[chatId].modelName : DEFAULT_MODEL.modelName;
       return bot.editMessageText('Выберите модель GPT:', {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '🤖 GPT-3.5 Turbo', callback_data: 'GPT-3.5 Turbo' },
-              { text: '⚡ GPT-4o-mini', callback_data: 'GPT-4o-mini' },
+              getModelButton('GPT-3.5 Turbo', currentModel),
+              getModelButton('GPT-4o-mini', currentModel),
             ],
             [
-              { text: '🧠 GPT-4o', callback_data: 'GPT-4o' },
-              { text: '🆕 GPT-o1-mini', callback_data: 'GPT-o1-mini' },
+              getModelButton('GPT-4o', currentModel),
+              getModelButton('GPT-o1-mini', currentModel),
             ],
             [
               { text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' },
@@ -138,14 +152,33 @@ module.exports = (bot) => {
       }
 
       userModels[chatId] = { modelName: data, endpoint };
+
+      // Формируем обновлённую клавиатуру с отметкой выбранной модели
+      const keyboard = {
+        inline_keyboard: [
+          [
+            getModelButton('GPT-3.5 Turbo', data),
+            getModelButton('GPT-4o-mini', data),
+          ],
+          [
+            getModelButton('GPT-4o', data),
+            getModelButton('GPT-o1-mini', data),
+          ],
+          [
+            { text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' },
+          ],
+        ],
+      };
+
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: `Вы выбрали модель ${data}.`,
       });
 
-      return bot.sendMessage(
-        chatId,
-        `Вы успешно переключились на модель ${data}.`
-      );
+      return bot.editMessageText(`Выберите модель GPT:\n\nВыбрана: ✅ ${data}`, {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        reply_markup: keyboard,
+      });
     }
 
     if (userState[chatId] === 'numerologist') {
@@ -201,30 +234,30 @@ module.exports = (bot) => {
     if (userState[chatId] === 'numerologist') {
       let processingMessageId;
 
-  try {
-    // 1. Отправляем «временное» сообщение, сохраняя его message_id
-    const processingMessage = await bot.sendMessage(
-      chatId,
-      '⏳ <b>Обрабатываем ваш запрос, пожалуйста, подождите...</b>',
-      { parse_mode: 'HTML' }
-    );
-    processingMessageId = processingMessage.message_id;
-
-    // 2. Делаем запрос к эндпоинту нумеролога
-    const response = await axios.post('/api/openai/numerologist', {
-      chatId,
-      type: userNumerologyChoices[chatId], 
-      userMessage,
-    });
-
-    // 3. Удаляем «временное» сообщение
-    if (processingMessageId) {
       try {
-        await bot.deleteMessage(chatId, processingMessageId);
-      } catch (err) {
-        console.warn('⚠️ Не удалось удалить временное сообщение:', err.message);
-      }
-    }
+        // Отправляем «временное» сообщение, сохраняем его message_id
+        const processingMessage = await bot.sendMessage(
+          chatId,
+          '⏳ <b>Обрабатываем ваш запрос, пожалуйста, подождите...</b>',
+          { parse_mode: 'HTML' }
+        );
+        processingMessageId = processingMessage.message_id;
+
+        // Делаем запрос к эндпоинту нумеролога
+        const response = await axios.post('/api/openai/numerologist', {
+          chatId,
+          type: userNumerologyChoices[chatId],
+          userMessage,
+        });
+
+        // Удаляем временное сообщение
+        if (processingMessageId) {
+          try {
+            await bot.deleteMessage(chatId, processingMessageId);
+          } catch (err) {
+            console.warn('⚠️ Не удалось удалить временное сообщение:', err.message);
+          }
+        }
 
         let botResponse = response.data.reply || 'Нет ответа...';
 
@@ -267,7 +300,7 @@ module.exports = (bot) => {
     
     let processingMessageId;
     try {
-      // Отправляем «ожидание»
+      // Отправляем сообщение ожидания
       const processingMessage = await bot.sendMessage(
         chatId,
         '⏳ <b>Обрабатываем ваш запрос, пожалуйста, подождите...</b>',
@@ -279,14 +312,14 @@ module.exports = (bot) => {
     }
 
     try {
-      // Запрашиваем ответ от выбранной модели (или от модели по умолчанию)
+      // Запрашиваем ответ от выбранной модели (или модели по умолчанию)
       const response = await axios.post(userModel.endpoint, {
         chatId,
         userMessage,
         modelName: userModel.modelName,
       });
 
-      // Удаляем «ожидание», если оно есть
+      // Удаляем сообщение ожидания, если оно есть
       if (processingMessageId) {
         try {
           await bot.deleteMessage(chatId, processingMessageId);
@@ -333,6 +366,7 @@ module.exports = (bot) => {
     }
   });
 };
+
 
 
 

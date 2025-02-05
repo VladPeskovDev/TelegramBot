@@ -2,7 +2,8 @@ const Redis = require('ioredis');
 const { UserModelRequest } = require('../../db/models');
 
 const redis = new Redis({
-  host: 'redis-cache', 
+  host: 'redis-cache',
+  //host: '127.0.0.1', 
   port: 6379,
   password: '0707',  
   db: 0,             
@@ -13,13 +14,12 @@ const redis = new Redis({
  
 const sub = new Redis({
   host: 'redis-cache',
+  //host: '127.0.0.1',
   port: 6379,
   password: '0707',
   db: 0,
   showFriendlyErrorStack: true,
 });
-
-// 📥 Получение данных из Redis по ключу
  
 async function getCache(key) {
   try {

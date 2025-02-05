@@ -10,8 +10,8 @@ const handleResetCommand = (bot) => {
         `user_${chatId}_o1-mini-2024-09-12_context`,
         `user_${chatId}_gpt-4o-mini_context`,
         `user_${chatId}_model4_context`,
-        `user_${chatId}_model3.5_context`
-
+        `user_${chatId}_model3.5_context`,
+        `user_${chatId}_numerologist_context`,
       ];
 
       let clearedContexts = 0;
