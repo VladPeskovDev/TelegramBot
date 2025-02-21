@@ -159,6 +159,10 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
 
 module.exports = openaiO1Router;
 
+
+//ssh -R 80:localhost:3000 serveo.net
+
+
 /*  
 const express = require('express');
 const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models'); 
