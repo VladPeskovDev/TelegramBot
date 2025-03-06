@@ -108,6 +108,11 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        {
+          name: 'GPT-o1-image', //numerologist
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
       ],
       {},
     );
@@ -147,6 +152,13 @@ module.exports = {
         {
           subscription_id: 1, // Free Plan
           model_id: 5, // numerolog
+          requests_limit: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          subscription_id: 1, // Free Plan
+          model_id: 6, // numerolog
           requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),

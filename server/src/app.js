@@ -8,6 +8,7 @@ const metricsRouter = require('./routes/metricsRouter');
 const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
 const paymentRouter = require('./routes/paymentRouter');
+const imageBotRouter = require('./routes/imageBotRouter');
 //const logger = require('./metrics/logger');
 
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/openaiO1', openaiO1Router);
 app.use('/api/metrics', metricsRouter);
 app.use('/api/robokassa', paymentRouter);
+app.use('/api/imagebot', imageBotRouter);
 
 cron.schedule('33 00 * * *', subscription); //33:00
 

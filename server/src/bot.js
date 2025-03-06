@@ -10,6 +10,7 @@ const { handleFeedbackCommand } = require('./commands/feedback');
 const { handleResetCommand } = require('./commands/reset');
 const setupTermsCommand = require('./commands/terms');
 const integratePrometheusMetrics = require('./metrics/prometheusIntegration');
+const setupImageCommand = require('./commands/image');
 
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: true });
@@ -31,6 +32,7 @@ bot.setMyCommands([
   { command: '/feedback', description: '✉️ Связаться с нами' },
   { command: '/reset', description: '🗑️ Сбросить контекст диалога' },
   {command: '/terms', description: '📜 Правила подписки и условия использования'},
+  {command: '/image', description: '📸 Обработка изображений'}
 ]);
 
 // Подключаем команды
@@ -44,6 +46,9 @@ handleFeedbackCommand(bot);
 handleResetCommand(bot);
 setupTermsCommand(bot);
 integratePrometheusMetrics(bot);
+setupImageCommand(bot);
+
+
 
 
 
