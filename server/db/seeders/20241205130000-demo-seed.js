@@ -158,7 +158,7 @@ module.exports = {
         },
         {
           subscription_id: 1, // Free Plan
-          model_id: 6, // numerolog
+          model_id: 6, // 
           requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -199,6 +199,13 @@ module.exports = {
           updatedAt: new Date(),
         },
         {
+          subscription_id: 2,
+          model_id: 6, // image
+          requests_limit: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
           subscription_id: 3, // Standart Plus Plan
           model_id: 1, // GPT-3.5
           requests_limit: 300,
@@ -230,6 +237,13 @@ module.exports = {
           subscription_id: 3, // Standart Plus Plan
           model_id: 5, // numerologist
           requests_limit: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          subscription_id: 3, // Standart Plus Plan
+          model_id: 6, // image
+          requests_limit: 12,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -269,6 +283,13 @@ module.exports = {
           updatedAt: new Date(),
         },
         {
+          subscription_id: 4, // Premium Plan
+          model_id: 6, // image
+          requests_limit: 25,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
           subscription_id: 5, // Numerologist Standart Plan
           model_id: 1,
           requests_limit: 75,
@@ -291,7 +312,7 @@ module.exports = {
         },
         {
           subscription_id: 5,
-          model_id: 4, // o1-mini-2024-09-12
+          model_id: 4, // o1
           requests_limit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -299,6 +320,13 @@ module.exports = {
         {
           subscription_id: 5,
           model_id: 5, // Numerologist
+          requests_limit: 15,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          subscription_id: 5,
+          model_id: 6, 
           requests_limit: 15,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -332,8 +360,15 @@ module.exports = {
           updatedAt: new Date(),
         },
         {
-          subscription_id: 6, // Numerologist Standart Plus Plan
+          subscription_id: 6, 
           model_id: 5,
+          requests_limit: 30,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          subscription_id: 6, 
+          model_id: 6,
           requests_limit: 30,
           createdAt: new Date(),
           updatedAt: new Date(),
