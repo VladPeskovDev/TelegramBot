@@ -17,7 +17,7 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = 'o1-mini-2024-09-12';
+  const modelName = 'o1';
   const mainKey = `user_${chatId}_o1-mini-2024-09-12`;
   const triggerKey = `trigger_${chatId}_o1-mini-2024-09-12`;
   const contextKey = `user_${chatId}_o1-mini-2024-09-12_context`;

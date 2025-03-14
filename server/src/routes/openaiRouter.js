@@ -154,7 +154,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = 'gpt-4o-2024-05-13';
+  const modelName = 'gpt-4o-2024-11-20';
   const mainKey = `user_${chatId}_model4`;
   const triggerKey = `trigger_${chatId}_model4`;
   const contextKey = `user_${chatId}_model4_context`;
@@ -291,7 +291,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = 'gpt-3.5-turbo';
+  const modelName = 'o3-mini-2025-01-31';
   const mainKey = `user_${chatId}_model3.5`;
   const triggerKey = `trigger_${chatId}_model3.5`;
   const contextKey = `user_${chatId}_model3.5_context`;
@@ -392,8 +392,7 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_tokens: 1250,
-      temperature: 0.7,
+      max_completion_tokens: 1250,
     });
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
