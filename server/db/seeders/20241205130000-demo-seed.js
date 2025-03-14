@@ -221,7 +221,7 @@ module.exports = {
         },
         {
           subscription_id: 3,
-          model_id: 2, // GPT-4o-mini
+          model_id: 3, // GPT-4o-mini
           requests_limit: 100,
           createdAt: new Date(),
           updatedAt: new Date(),
