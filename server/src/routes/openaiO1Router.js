@@ -10,7 +10,7 @@ const openaiO1Router = express.Router();
 const MAIN_KEY_TTL = 450;
 const TRIGGER_KEY_TTL = 448;
 
-openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
+openaiO1Router.post('/model_o1', async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
@@ -18,9 +18,9 @@ openaiO1Router.post('/model_o1-mini-2024-09-12', async (req, res) => {
   }
 
   const modelName = 'o1';
-  const mainKey = `user_${chatId}_o1-mini-2024-09-12`;
-  const triggerKey = `trigger_${chatId}_o1-mini-2024-09-12`;
-  const contextKey = `user_${chatId}_o1-mini-2024-09-12_context`;
+  const mainKey = `user_${chatId}_o1`;
+  const triggerKey = `trigger_${chatId}_o1`;
+  const contextKey = `user_${chatId}_o1_context`;
 
   try {
     let userCache = await cache.getCache(mainKey);

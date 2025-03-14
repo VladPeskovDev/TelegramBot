@@ -2,7 +2,7 @@ const axios = require('../utils/axiosInstance');
 require('dotenv').config();
 const path = require('path');
 
-const DEFAULT_MODEL = { modelName: 'GPT-3.5 Turbo', endpoint: '/api/openai/model3.5' };
+const DEFAULT_MODEL = { modelName: 'GPT-4o-mini', endpoint: '/api/openai/model_gpt-4o-mini' };
 
 const userModels = {};            // хранит выбранную модель (для GPT и изображений)
 const userState = {};             // текущее состояние: 'gpt', 'numerologist' или 'image'
@@ -17,18 +17,68 @@ function escapeHtml(str = '') {
     .replace(/>/g, '&gt;');
 }
 
-function convertMarkdownCodeToHtml(text = '') {
+/* function convertMarkdownCodeToHtml(text = '') {
   const codeBlockRegex = /```([\w-+]+)?([\s\S]*?)```/g;
   return text.replace(codeBlockRegex, (match, lang, code) => {
     code = code.trim();
     code = escapeHtml(code);
     if (lang) {
-      return `<pre><code class="language-${lang}">${code}</code></pre>`;
+      return `<b>${escapeHtml(lang)}</b>\n<pre><code>${code}</code></pre>`;
     } else {
       return `<pre><code>${code}</code></pre>`;
     }
   });
-}
+} */
+
+  function sanitizeBotResponse(responseText) {
+    // Шаблон для поиска тройных кавычек и содержимого внутри
+    const codeBlockRegex = /```([\s\S]*?)```/g;
+    
+    // Массив, в котором будет чередоваться: [текст вне кода, блок кода, текст вне кода, ...]
+    let segments = [];
+    let lastIndex = 0;
+    
+    // Находим все блоки "```...```"
+    let match;
+    while ((match = codeBlockRegex.exec(responseText)) !== null) {
+      const index = match.index;
+      // Добавить кусок текста до блока кода
+      segments.push({
+        type: 'text',
+        content: responseText.slice(lastIndex, index),
+      });
+      // Добавить сам блок кода
+      segments.push({
+        type: 'code',
+        content: match[1], // содержимое между ```
+      });
+      lastIndex = codeBlockRegex.lastIndex;
+    }
+    // Добавить оставшийся кусок текста после последнего блока
+    if (lastIndex < responseText.length) {
+      segments.push({
+        type: 'text',
+        content: responseText.slice(lastIndex),
+      });
+    }
+    segments = segments.map((segment) => {
+      if (segment.type === 'text') {
+        // Экранируем весь текст (заменяем <, >, & и т.д.)
+        return escapeHtml(segment.content);
+      } else {
+        // Это блок кода
+        // 1. Тримим
+        // 2. Тоже экранируем <, > и т.д.
+        const codeContent = escapeHtml(segment.content.trim());
+        // Оборачиваем в <pre><code>
+        return `<pre><code>${codeContent}</code></pre>`;
+      }
+    });
+  
+    // Склеиваем всё обратно
+    return segments.join('');
+  }
+  
 
 /**
  * Формирует кнопку для выбора модели с индикатором, если модель уже выбрана.
@@ -124,12 +174,12 @@ module.exports = (bot) => {
         reply_markup: {
           inline_keyboard: [
             [
-              getModelButton('GPT-3.5 Turbo', 'GPT-3.5 Turbo', currentModel),
+              getModelButton('GPT-o3-mini', 'GPT-o3-mini', currentModel),
               getModelButton('GPT-4o-mini', 'GPT-4o-mini', currentModel),
             ],
             [
               getModelButton('GPT-4o', 'GPT-4o', currentModel),
-              getModelButton('GPT-o1-mini', 'GPT-o1-mini', currentModel),
+              getModelButton('GPT-o1', 'GPT-o1', currentModel),
             ],
             [{ text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' }],
           ],
@@ -170,8 +220,8 @@ module.exports = (bot) => {
     if (userState[chatId] === 'gpt') {
       let endpoint;
       switch (data) {
-        case 'GPT-3.5 Turbo':
-          endpoint = '/api/openai/model3.5';
+        case 'GPT-o3-mini':
+          endpoint = '/api/openai/o3-mini';
           break;
         case 'GPT-4o':
           endpoint = '/api/openai/model4';
@@ -179,8 +229,8 @@ module.exports = (bot) => {
         case 'GPT-4o-mini':
           endpoint = '/api/openai/model_gpt-4o-mini';
           break;
-        case 'GPT-o1-mini':
-          endpoint = '/api/openaiO1/model_o1-mini-2024-09-12';
+        case 'GPT-o1':
+          endpoint = '/api/openaiO1/model_o1';
           break;
         default:
           return bot.answerCallbackQuery(callbackQuery.id, {
@@ -191,12 +241,12 @@ module.exports = (bot) => {
       const keyboard = {
         inline_keyboard: [
           [
-            getModelButton('GPT-3.5 Turbo', 'GPT-3.5 Turbo', data),
+            getModelButton('GPT-o3-mini', 'GPT-o3-mini', data),
             getModelButton('GPT-4o-mini', 'GPT-4o-mini', data),
           ],
           [
             getModelButton('GPT-4o', 'GPT-4o', data),
-            getModelButton('GPT-o1-mini', 'GPT-o1-mini', data),
+            getModelButton('GPT-o1', 'GPT-o1', data),
           ],
           [{ text: '🔙 Назад', callback_data: 'BACK_MAIN_CHOICE' }],
         ],
@@ -302,7 +352,7 @@ module.exports = (bot) => {
           }
         }
         let botResponse = response.data.reply || 'Нет ответа...';
-        botResponse = convertMarkdownCodeToHtml(botResponse);
+        botResponse = sanitizeBotResponse(botResponse);
         if (botResponse.length <= 4000) {
           bot.sendMessage(
             chatId,
@@ -361,11 +411,12 @@ module.exports = (bot) => {
           }
         }
         let botResponse = response.data.reply || 'Нет ответа...';
-        botResponse = convertMarkdownCodeToHtml(botResponse);
-        if (botResponse.length <= 4000) {
+        botResponse = sanitizeBotResponse(botResponse);
+        const byteLength = Buffer.byteLength(botResponse, 'utf-8');
+        if (byteLength <= 4000) {
           bot.sendMessage(
             chatId,
-            `🤖 <b>Ответ:</b>\n\n${botResponse}`,
+            `<b>Ответ:</b>\n\n${botResponse}`,
             { parse_mode: 'HTML' }
           );
         } else {

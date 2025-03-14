@@ -31,7 +31,7 @@ module.exports = {
         },
         {
           name: 'Standart Plan',
-          price: 149,
+          price: 199,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -43,7 +43,7 @@ module.exports = {
         },
         {
           name: 'Premium Plan',
-          price: 899,
+          price: 999,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -84,7 +84,7 @@ module.exports = {
       'GPTModels',
       [
         {
-          name: 'GPT-3.5 Turbo',   //GPT-3.5
+          name: 'GPT-o3-mini',   //GPT-o3-mini
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -99,7 +99,7 @@ module.exports = {
           updatedAt: new Date(),
         },
         {
-          name: 'GPT-o1-mini',  //o1-mini-2024-09-12
+          name: 'GPT-o1',  //o1
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -109,7 +109,7 @@ module.exports = {
           updatedAt: new Date(),
         },
         {
-          name: 'GPT-o1-image', //numerologist
+          name: 'GPT-o1-image', //IMAGE
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -123,8 +123,8 @@ module.exports = {
       [
         {
           subscription_id: 1, // Free Plan
-          model_id: 1, // GPT-3.5
-          requests_limit: 75,
+          model_id: 1, // GPT-o3-mini
+          requests_limit: 10,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -138,13 +138,13 @@ module.exports = {
         {
           subscription_id: 1, // Free Plan
           model_id: 3, // gpt-4o-mini-2024-07-18
-          requests_limit: 35,
+          requests_limit: 40,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 1, // Free Plan
-          model_id: 4, // o1-mini-2024-09-12
+          model_id: 4, // o1
           requests_limit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -158,15 +158,15 @@ module.exports = {
         },
         {
           subscription_id: 1, // Free Plan
-          model_id: 6, // 
+          model_id: 6, // IMAGE
           requests_limit: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 2, // Standart Plan
-          model_id: 1, // GPT-3.5
-          requests_limit: 150,
+          model_id: 1, // GPT-o3-mini
+          requests_limit: 25,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -180,14 +180,14 @@ module.exports = {
         {
           subscription_id: 2,
           model_id: 3, // GPT-4o-mini
-          requests_limit: 50,
+          requests_limit: 70,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 2,
-          model_id: 4, // o1-mini-2024-09-12
-          requests_limit: 25,
+          model_id: 4, // o1
+          requests_limit: 20,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -201,14 +201,14 @@ module.exports = {
         {
           subscription_id: 2,
           model_id: 6, // image
-          requests_limit: 2,
+          requests_limit: 5,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 3, // Standart Plus Plan
-          model_id: 1, // GPT-3.5
-          requests_limit: 300,
+          model_id: 1, // GPT-o3-mini
+          requests_limit: 35,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -228,8 +228,8 @@ module.exports = {
         },
         {
           subscription_id: 3, // Standart Plus Plan
-          model_id: 4, // o1-mini-2024-09-12
-          requests_limit: 50,
+          model_id: 4, // o1
+          requests_limit: 30,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -243,14 +243,14 @@ module.exports = {
         {
           subscription_id: 3, // Standart Plus Plan
           model_id: 6, // image
-          requests_limit: 12,
+          requests_limit: 10,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 4, // Premium Plan
-          model_id: 1, // GPT-3.5
-          requests_limit: 1000,
+          model_id: 1, // GPT-o3-mini
+          requests_limit: 100,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -270,8 +270,8 @@ module.exports = {
         },
         {
           subscription_id: 4, // Premium Plan
-          model_id: 4, // o1-mini-2024-09-12
-          requests_limit: 75,
+          model_id: 4, // o1
+          requests_limit: 50,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -292,7 +292,7 @@ module.exports = {
         {
           subscription_id: 5, // Numerologist Standart Plan
           model_id: 1,
-          requests_limit: 75,
+          requests_limit: 5,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -313,7 +313,7 @@ module.exports = {
         {
           subscription_id: 5,
           model_id: 4, // o1
-          requests_limit: 0,
+          requests_limit: 5,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -327,14 +327,14 @@ module.exports = {
         {
           subscription_id: 5,
           model_id: 6, 
-          requests_limit: 15,
+          requests_limit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           subscription_id: 6, // Numerologist Standart Plus Plan
           model_id: 1,
-          requests_limit: 100,
+          requests_limit: 15,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -369,7 +369,7 @@ module.exports = {
         {
           subscription_id: 6, 
           model_id: 6,
-          requests_limit: 30,
+          requests_limit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

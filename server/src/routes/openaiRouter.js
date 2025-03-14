@@ -281,10 +281,10 @@ openaiRouter.route('/model4').post(async (req, res) => {
 
 /* 
   ===============================
-   3) ЭНДПОИНТ: /model3.5
+   3) ЭНДПОИНТ: /o3-mini
   ===============================
 */
-openaiRouter.route('/model3.5').post(async (req, res) => {
+openaiRouter.route('/o3-mini').post(async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
@@ -292,9 +292,9 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
   }
 
   const modelName = 'o3-mini-2025-01-31';
-  const mainKey = `user_${chatId}_model3.5`;
-  const triggerKey = `trigger_${chatId}_model3.5`;
-  const contextKey = `user_${chatId}_model3.5_context`;
+  const mainKey = `user_${chatId}_o3-mini`;
+  const triggerKey = `trigger_${chatId}_o3-mini`;
+  const contextKey = `user_${chatId}_o3-mini_context`;
 
   try {
     let userCache = await cache.getCache(mainKey);
@@ -394,6 +394,8 @@ openaiRouter.route('/model3.5').post(async (req, res) => {
       messages: userContext,
       max_completion_tokens: 1250,
     });
+
+    //console.log('[DEBUG] O3-mini raw response:', JSON.stringify(response, null, 2));
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 

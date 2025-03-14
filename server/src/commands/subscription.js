@@ -4,14 +4,15 @@ const { User } = require('../../db/models');
 const subscriptionDetails = {
   subscription_standart_plan: {
     name: 'Standart Plan',
-    price: '149₽',
-    details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW 🚀 и GPT-4o',
+    price: '199₽',
+    details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1 🚀 и GPT-4o',
     modelLimits: {
-      'GPT-3.5 Turbo': 150,
-      'GPT-4o-mini': 50,
+      'GPT-o3-mini': 25,
+      'GPT-4o-mini': 70,
       'GPT-4o': 15,
-      'GPT-o1-mini-NEW': 25,
+      'GPT-o1': 20,
       'Numerolog': 2,
+      'GPT-o1-image': 5,
     },
   },
   subscription_standart_plus_plan: {
@@ -19,23 +20,25 @@ const subscriptionDetails = {
     price: '299₽',
     details: 'Возможность пользоваться любыми моделями GPT, в том числе новой моделью GPT-o1-mini-NEW 🚀',
     modelLimits: {
-      'GPT-3.5 Turbo': 300,
+      'GPT-o3-mini': 35,
       'GPT-4o-mini': 100,
       'GPT-4o': 30,
-      'GPT-o1-mini-NEW': 50,
+      'GPT-o1': 30,
       'Numerolog': 2,
+      'GPT-o1-image': 10,
     },
   },
   subscription_premium_plan: {
     name: 'Premium Plan',
-    price: '899₽',
+    price: '999₽',
     details: 'Возможность пользоваться любыми доступными моделями GPT в большом количестве, в том числе новой моделью GPT-o1-mini-NEW 🚀',
     modelLimits: {
-      'GPT-3.5 Turbo': 1000,
+      'GPT-o3-mini': 100,
       'GPT-4o-mini': 250,
       'GPT-4o': 50,
-      'GPT-o1-mini-NEW': 75,
+      'GPT-o1': 50,
       'Numerolog': 5,
+      'GPT-o1-image': 25,
     },
   },
   subscription_numerolog_standart_plan: {
@@ -43,11 +46,12 @@ const subscriptionDetails = {
     price: '99₽',
     details: 'Возможность пользоваться моделями GPT, а также личным GPT-нумерологом 🚀',
     modelLimits: {
-      'GPT-3.5 Turbo': 75,
+      'GPT-o3-mini': 5,
       'GPT-4o-mini': 25,
       'GPT-4o': 0,
-      'GPT-o1-mini-NEW': 0,
-      'Numerolog': 20,
+      'GPT-o1': 5,
+      'Numerolog': 15,
+      'GPT-o1-image': 0,
     },
   },
   subscription_numerolog_premium_plan: {
@@ -55,11 +59,12 @@ const subscriptionDetails = {
     price: '199₽',
     details: 'Возможность пользоваться любыми моделями GPT, а также личным GPT-нумерологом 🚀',
     modelLimits: {
-      'GPT-3.5 Turbo': 100,
+      'GPT-o3-mini': 15,
       'GPT-4o-mini': 50,
       'GPT-4o': 0,
-      'GPT-o1-mini-NEW': 0,
+      'GPT-o1': 0,
       'Numerolog': 50,
+      'GPT-o1-image': 0,
     },
   },
 };
