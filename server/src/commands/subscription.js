@@ -106,9 +106,9 @@ module.exports = (bot) => {
       const options = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: '💵 Standart Plan - 149₽', callback_data: 'subscription_standart_plan' }],
+            [{ text: '💵 Standart Plan - 199₽', callback_data: 'subscription_standart_plan' }],
             [{ text: '💵 Standart Plus Plan - 299₽', callback_data: 'subscription_standart_plus_plan' }],
-            [{ text: '💵 Premium Plan - 899₽', callback_data: 'subscription_premium_plan' }],
+            [{ text: '💵 Premium Plan - 999₽', callback_data: 'subscription_premium_plan' }],
             [{ text: '💵 Нумеролог Standart Plan - 99₽', callback_data: 'subscription_numerolog_standart_plan' }],
             [{ text: '💵 Нумеролог Premium Plan - 199₽', callback_data: 'subscription_numerolog_premium_plan' }]
           ],

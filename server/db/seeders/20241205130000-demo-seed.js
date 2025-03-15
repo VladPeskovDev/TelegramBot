@@ -4,10 +4,12 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     // Данные для таблицы Users
-    await queryInterface.bulkInsert(
+
+     await queryInterface.bulkInsert(
       'Users',
       [
         {
+          id: 1,
           telegram_id: 96800740,
           username: 'VladislavPeskov',
           first_name: 'Vladislav',
@@ -17,7 +19,7 @@ module.exports = {
         },
       ],
       {},
-    );
+    ); 
 
     // Данные для таблицы Subscriptions
     await queryInterface.bulkInsert(
@@ -77,7 +79,7 @@ module.exports = {
         },
       ],
       {},
-    );
+    ); 
 
     // Данные для таблицы GPTModels
     await queryInterface.bulkInsert(

@@ -10,7 +10,8 @@
     "stop": "pm2 stop my-bot",
     "db:setup": "NODE_ENV=production npx sequelize db:create && NODE_ENV=production npx sequelize db:migrate && NODE_ENV=production npx sequelize db:seed:all",
     "start": "NODE_ENV=production node src/server.js",
-    "seed": "NODE_ENV=production npx sequelize db:seed:undo:all && NODE_ENV=production npx sequelize db:seed:all"
+    "seed": "NODE_ENV=production npx sequelize db:seed:undo:all && NODE_ENV=production npx sequelize db:seed:all",
+    "db:setup1": "NODE_ENV=production npx sequelize db:drop && NODE_ENV=production npx sequelize db:create && NODE_ENV=production npx sequelize db:migrate && NODE_ENV=production npx sequelize db:seed:all"
   },
   "keywords": [],
   "author": "",
