@@ -9,6 +9,7 @@ const cron = require('node-cron');
 const { subscription } = require('./utils/subscriptionCron');
 const paymentRouter = require('./routes/paymentRouter');
 const imageBotRouter = require('./routes/imageBotRouter');
+const audioBotRouter = require('./routes/audioBotRouter');
 //const logger = require('./metrics/logger');
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/openaiO1', openaiO1Router);
 app.use('/api/metrics', metricsRouter);
 app.use('/api/robokassa', paymentRouter);
 app.use('/api/imagebot', imageBotRouter);
+app.use('/api/audiobot', audioBotRouter);
 
 cron.schedule('31 0,1,12 * * *', subscription); //33:00 (запуск в 03:33, 04:33, 15:33)
 
