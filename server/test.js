@@ -71,3 +71,12 @@ export default function () {
 
 
 //k6 run test.js
+
+
+
+
+
+
+/* function reverse(str){
+  return str.split("").reverce().join("");
+} */

@@ -10,6 +10,7 @@ const cache = require('../utils/cacheRedis');
 const openai = require('../utils/openai');
 const axios = require('axios');
 const userRateLimiter = require('../utils/rateLimitConfig');
+const { runOcrInWorker } = require('../utils/ocr');
 
 const imageBotRouter = express.Router();
 
@@ -156,14 +157,14 @@ imageBotRouter.route('/process-image').post(userRateLimiter, async (req, res) =>
   }
 });
 
+
+//ENDPOINT DESKTOP
+
 imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req, res) => {
   const { chatId, base64Image, userMessage } = req.body;
 
   if (!chatId || !base64Image) {
-    console.error('❌ Ошибка: отсутствуют обязательные параметры.');
-    return res
-      .status(400)
-      .json({ error: 'Отсутствуют обязательные параметры (chatId, base64Image).' });
+    return res.status(400).json({ error: 'Отсутствуют обязательные параметры (chatId, base64Image).' });
   }
 
   const mainKey = `user_${chatId}_imageProcess_model6`;
@@ -171,19 +172,13 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
   const contextKey = `image_context_${chatId}`;
 
   try {
-    // Получаем контекст диалога пользователя
     let cachedContext = (await cache.getCache(contextKey)) || [];
-
-    // Проверяем подписку и лимиты пользователя
     let userCache = await cache.getCache(mainKey);
+
     if (!userCache) {
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
-        return res
-          .status(403)
-          .json({
-            error: 'Пользователь не зарегистрирован в боте. Используйте /start в Telegram.',
-          });
+        return res.status(403).json({ error: 'Пользователь не зарегистрирован. Используйте /start в Telegram.' });
       }
 
       const activeSubscription = await UserSubscription.findOne({
@@ -193,21 +188,17 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
-        return res
-          .status(403)
-          .json({ error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.' });
+        return res.status(403).json({ error: 'Нет активной подписки. Пожалуйста, оформите подписку.' });
       }
 
-      // Проверка лимитов подписки
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
         where: { subscription_id: activeSubscription.subscription.id, model_id: 6 },
       });
 
       if (!subscriptionLimit) {
-        return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
+        return res.status(400).json({ error: 'Лимиты не найдены для данной подписки и модели.' });
       }
 
-      // Проверка количества использованных запросов
       const userModelRequest = await UserModelRequest.findOne({
         where: { user_id: user.id, model_id: 6 },
       });
@@ -225,17 +216,12 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       await cache.setCache(mainKey, userCache, 600);
     }
 
-    // Проверяем, не превышен ли лимит запросов
     if (userCache.requestCount >= userCache.requestsLimit) {
-      return res
-        .status(403)
-        .json({ error: 'Вы исчерпали лимит запросов. Оформите подписку (/subscription).' });
+      return res.status(403).json({ error: 'Вы исчерпали лимит запросов. Оформите подписку.' });
     }
 
-    // Увеличиваем счётчик запросов
     userCache.requestCount += 1;
 
-    // Принудительное обновление счётчика в БД каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       userCache.syncing = true;
       await UserModelRequest.upsert(
@@ -249,24 +235,22 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       userCache.syncing = false;
     }
 
-    // Обновляем кеш
     await cache.setCache(mainKey, userCache, 450);
     await cache.setCache(triggerKey, '1', 448);
 
-    // **Формирование контекста запроса**
-    cachedContext.push({
-      role: 'user',
-      content: [
-        { type: 'text', text: userMessage || 'Определите, что изображено на фото.' },
-        { type: 'image_url', image_url: { url: base64Image } },
-      ],
-    });
+    // ✅ OCR через utils
+    const extractedText = await runOcrInWorker(base64Image);
 
+    const prompt = userMessage
+      ? `${userMessage}\n\nВот код с изображения:\n${extractedText}`
+      : `Реши задачу по коду с изображения:\n\n${extractedText}`;
+
+    cachedContext.push({ role: 'user', content: prompt });
+    
     if (cachedContext.length > 1) {
       cachedContext = cachedContext.slice(-1);
     }
 
-    // Отправляем запрос в OpenAI
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-2024-11-20',
       messages: cachedContext,
@@ -276,7 +260,6 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
 
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
-    // Сохраняем контекст
     cachedContext.push({ role: 'assistant', content: botResponse });
     if (cachedContext.length > 3) {
       cachedContext = cachedContext.slice(-3);
@@ -284,13 +267,11 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
 
     await cache.setCache(contextKey, cachedContext, 450);
 
-    // **Отправляем ответ пользователю в Telegram**
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    const telegramApiUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
 
     await axios.post(telegramApiUrl, {
       chat_id: chatId,
-      text: `📸 *Ответ на изображение:*\n\n${botResponse}`,
+      text: `📜 *Результат задачи по изображению:*\n\n${botResponse}`,
       parse_mode: 'Markdown',
     });
 

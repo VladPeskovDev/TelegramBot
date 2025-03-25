@@ -3,11 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
-const {
-  User,
-  UserSubscription,
-  Subscription,
-  SubscriptionModelLimit,
+const { User, UserSubscription, Subscription, SubscriptionModelLimit,
   UserModelRequest,
 } = require('../../db/models');
 const cache = require('../utils/cacheRedis');
@@ -17,11 +13,10 @@ const userRateLimiter = require('../utils/rateLimitConfig');
 const audioBotRouter = express.Router();
 
 
-
 audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) => {
   console.log('✅ Получен запрос на обработку аудио.');
 
-  const { chatId, base64Audio } = req.body;
+  const { chatId, base64Audio, userPrompt } = req.body;
 
   if (!chatId || !base64Audio) {
     console.error('❌ Ошибка: отсутствуют обязательные параметры (chatId, base64Audio).');
@@ -133,6 +128,11 @@ audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) =>
 
     // Удаляем временный файл после обработки
     fs.unlinkSync(tempAudioFilePath);
+
+    cachedContext.push({
+      role: 'system',
+      content: userPrompt || 'Проанализируй расшифрованное голосовое сообщение пользователя.',
+    });
 
     // 📌 **Формируем контекст для GPT-4o**
     cachedContext.push({
