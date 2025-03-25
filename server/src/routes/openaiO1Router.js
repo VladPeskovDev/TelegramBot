@@ -3,6 +3,7 @@ const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionMode
 } = require('../../db/models');
 const openai = require('../utils/openai');
 const cache = require('../utils/cacheRedis');
+const userRateLimiter = require('../utils/rateLimitConfig');
 require('dotenv').config();
 
 const openaiO1Router = express.Router();
@@ -10,7 +11,7 @@ const openaiO1Router = express.Router();
 const MAIN_KEY_TTL = 450;
 const TRIGGER_KEY_TTL = 448;
 
-openaiO1Router.post('/model_o1', async (req, res) => {
+openaiO1Router.route('/model_o1').post(userRateLimiter, async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {

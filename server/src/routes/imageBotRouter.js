@@ -9,10 +9,11 @@ const {
 const cache = require('../utils/cacheRedis');
 const openai = require('../utils/openai');
 const axios = require('axios');
+const userRateLimiter = require('../utils/rateLimitConfig');
 
 const imageBotRouter = express.Router();
 
-imageBotRouter.route('/process-image').post(async (req, res) => {
+imageBotRouter.route('/process-image').post(userRateLimiter, async (req, res) => {
   const { chatId, base64Image, userMessage } = req.body;
 
   if (!chatId || !base64Image || !userMessage) {
@@ -155,7 +156,7 @@ imageBotRouter.route('/process-image').post(async (req, res) => {
   }
 });
 
-imageBotRouter.route('/external/image-process').post(async (req, res) => {
+imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req, res) => {
   const { chatId, base64Image, userMessage } = req.body;
 
   if (!chatId || !base64Image) {

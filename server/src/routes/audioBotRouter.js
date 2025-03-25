@@ -12,10 +12,11 @@ const {
 } = require('../../db/models');
 const cache = require('../utils/cacheRedis');
 const openai = require('../utils/openai');
+const userRateLimiter = require('../utils/rateLimitConfig');
 
 const audioBotRouter = express.Router();
 
-audioBotRouter.post('/process-audio', async (req, res) => {
+audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) => {
   console.log('✅ Получен запрос на обработку аудио.');
 
   const { chatId, base64Audio } = req.body;

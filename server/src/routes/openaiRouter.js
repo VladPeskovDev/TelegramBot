@@ -1,4 +1,5 @@
 const express = require('express');
+const userRateLimiter = require('../utils/rateLimitConfig');
 const { User, UserSubscription, UserModelRequest, Subscription, SubscriptionModelLimit } = require('../../db/models');
 const openai = require('../utils/openai');
 const openaiRouter = express.Router();
@@ -6,12 +7,17 @@ const cache = require('../utils/cacheRedis');
 const { getSystemPromptByType } = require('../utils/numerologyPrompts');
 require('dotenv').config();
 
+
 /* 
   ================================
    1) ЭНДПОИНТ: /model_gpt-4o-mini
   ================================
 */
-openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
+
+
+
+
+openaiRouter.route('/model_gpt-4o-mini').post(userRateLimiter, async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
@@ -142,137 +148,13 @@ openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
   }
 });
 
-/*
-//Правильный Счетчик запросов
-openaiRouter.route('/model_gpt-4o-mini').post(async (req, res) => {
-  const { chatId, userMessage } = req.body;
-
-  if (!userMessage) {
-    return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
-  }
-
-  const modelName = 'gpt-4o-mini-2024-07-18';
-  const requestCountKey = `user_${chatId}_gpt-4o-mini_count`;
-  const contextKey = `user_${chatId}_gpt-4o-mini_context`;
-  const modelId = 3; // ID модели для БД
-
-  try {
-    // 1) Находим пользователя
-    const user = await User.findOne({ where: { telegram_id: chatId } });
-    if (!user) {
-      return res.status(403).json({
-        error: 'Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.',
-      });
-    }
-
-    // 2) Проверяем подписку
-    const activeSubscription = await UserSubscription.findOne({
-      where: { user_id: user.id },
-      include: [{ model: Subscription, as: 'subscription' }],
-      order: [['end_date', 'DESC']],
-    });
-
-    if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
-      return res.status(403).json({
-        error: 'У вас нет активной подписки. Пожалуйста, оформите подписку.',
-      });
-    }
-
-    const subscriptionPlanId = activeSubscription.subscription.id;
-    const subscriptionLimit = await SubscriptionModelLimit.findOne({
-      where: {
-        subscription_id: subscriptionPlanId,
-        model_id: modelId,
-      },
-    });
-
-    if (!subscriptionLimit) {
-      return res.status(400).json({ error: 'Лимиты для данной подписки и модели не найдены.' });
-    }
-
-    // 3) АТОМАРНО увеличиваем счётчик и проставляем TTL
-    //    через Redis pipeline (INCR + EXPIRE)
-    //    cache.redis - это объект Redis-клиента, см. cacheRedis.js
-    const pipeline = cache.redis.pipeline();
-    pipeline.incr(requestCountKey);            // INCR
-    pipeline.expire(requestCountKey, 450);     // EXPIRE 450 секунд
-    const results = await pipeline.exec();
-
-    // results: [ [null, newCount], [null, 1] ] (если всё ок)
-    const newCount = results[0][1]; // индекс 0 - это incr, подиндекс 1 - само число
-
-    // 4) Проверяем лимит
-    if (newCount > subscriptionLimit.requests_limit) {
-      return res.status(403).json({
-        error: 'Вы исчерпали лимит запросов для данной модели. Используйте команду /subscription.',
-      });
-    }
-
-    // 5) Каждые 5 запросов - синхронизируем в БД
-    if (newCount % 5 === 0) {
-      await UserModelRequest.upsert(
-        {
-          user_id: user.id,
-          model_id: modelId,
-          request_count: newCount,
-        },
-        {
-          where: {
-            user_id: user.id,
-            model_id: modelId,
-          },
-        },
-      );
-    }
-
-    // 6) Получаем/обновляем контекст
-    let userContext = await cache.getCache(contextKey);
-    if (!userContext) userContext = [];
-
-    userContext.push({ role: 'user', content: userMessage });
-    if (userContext.length > 3) {
-      userContext = userContext.slice(-3);
-    }
-
-    // 7) Запрашиваем OpenAI
-    const response = await openai.chat.completions.create({
-      model: modelName,
-      messages: userContext,
-      max_tokens: 1200,
-      temperature: 0.7,
-    });
-
-    const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
-
-    userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 3) {
-      userContext = userContext.slice(-3);
-    }
-
-    // 8) Сохраняем контекст в Redis
-    await cache.setCache(contextKey, userContext, 450);
-
-    // 9) Кешируем ответ (по желанию)
-    if (botResponse.length <= 5000) {
-      const respKey = `response_${chatId}_${userMessage}`;
-      await cache.setCache(respKey, botResponse, 450);
-    }
-
-    // 10) Возвращаем ответ
-    res.json({ reply: botResponse });
-  } catch (error) {
-    console.error('❌ Ошибка при обработке сообщения (gpt-4o-mini):', error.message);
-    res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
-  }
-});
-*/
 
 /* 
   ===============================
    2) ЭНДПОИНТ: /model4
   ===============================
 */
-openaiRouter.route('/model4').post(async (req, res) => {
+openaiRouter.route('/model4').post(userRateLimiter, async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
@@ -409,7 +291,7 @@ openaiRouter.route('/model4').post(async (req, res) => {
    3) ЭНДПОИНТ: /o3-mini
   ===============================
 */
-openaiRouter.route('/o3-mini').post(async (req, res) => {
+openaiRouter.route('/o3-mini').post(userRateLimiter, async (req, res) => {
   const { chatId, userMessage } = req.body;
 
   if (!userMessage) {
@@ -545,7 +427,7 @@ openaiRouter.route('/o3-mini').post(async (req, res) => {
   }
 });
 
-openaiRouter.route('/numerologist').post(async (req, res) => {
+openaiRouter.route('/numerologist').post(userRateLimiter, async (req, res) => {
   const { chatId, type, userMessage } = req.body;
 
   if (!userMessage) {
