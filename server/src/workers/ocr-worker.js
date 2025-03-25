@@ -8,7 +8,7 @@ parentPort.on('message', async (base64Image) => {
     const buffer = Buffer.from(base64Image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
     const {
       data: { text },
-    } = await Tesseract.recognize(buffer, 'eng');
+    } = await Tesseract.recognize(buffer, 'eng+rus');
 
     parentPort.postMessage({ text });
   } catch (err) {

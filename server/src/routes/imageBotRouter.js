@@ -261,8 +261,8 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
     const botResponse = response.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     cachedContext.push({ role: 'assistant', content: botResponse });
-    if (cachedContext.length > 3) {
-      cachedContext = cachedContext.slice(-3);
+    if (cachedContext.length > 0) {
+      cachedContext = cachedContext.slice(-0);
     }
 
     await cache.setCache(contextKey, cachedContext, 450);
