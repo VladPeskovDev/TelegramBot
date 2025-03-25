@@ -18,7 +18,7 @@ openaiO1Router.route('/model_o1').post(userRateLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым.' });
   }
 
-  const modelName = 'o1';
+  const modelName = 'o1-preview';
   const mainKey = `user_${chatId}_o1`;
   const triggerKey = `trigger_${chatId}_o1`;
   const contextKey = `user_${chatId}_o1_context`;
@@ -79,20 +79,18 @@ openaiO1Router.route('/model_o1').post(userRateLimiter, async (req, res) => {
 
       // Сохраняем в основной ключ (TTL=450)
       await cache.setCache(mainKey, userCache, MAIN_KEY_TTL);
-      // Ставим/обновляем триггер-ключ (TTL=448)
       await cache.setCache(triggerKey, '1', TRIGGER_KEY_TTL);
     }
-    // 3) Проверяем лимит
+
+    
     if (userCache.requestCount >= userCache.requestsLimit) {
       return res.status(403).json({
         error: `Вы исчерпали лимит запросов для данной модели, рекомендуем приобрести подписку по команде /subscription.`,
       });
     }
 
-    // 4) Увеличиваем счётчик
     userCache.requestCount += 1;
 
-    // синхронизируем каждые 5 запросов
     if (userCache.requestCount % 5 === 0 && !userCache.syncing) {
       //console.log(`[DEBUG] Кратный 5 запрос => Sync в БД`);
       userCache.syncing = true;
@@ -131,15 +129,15 @@ openaiO1Router.route('/model_o1').post(userRateLimiter, async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_completion_tokens: 1200,
+      max_completion_tokens: 6000,
     });
 
     const botResponse = response?.choices?.[0]?.message?.content?.trim() || 'Ответ пустой';
 
     // 6) Добавляем ответ бота, снова обрезаем до 2 сообщений
     userContext.push({ role: 'assistant', content: botResponse });
-    if (userContext.length > 3) {
-      userContext = userContext.slice(-3);
+    if (userContext.length > 2) {
+      userContext = userContext.slice(-2);
     }
 
     // 7) Сохраняем контекст (TTL=450)

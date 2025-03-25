@@ -127,7 +127,7 @@ imageBotRouter.route('/process-image').post(userRateLimiter, async (req, res) =>
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-2024-11-20',
       messages: cachedContext,
-      max_tokens: 1200,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 
@@ -135,8 +135,8 @@ imageBotRouter.route('/process-image').post(userRateLimiter, async (req, res) =>
 
     // Сохраняем ответ в контекст и обновляем кеш
     cachedContext.push({ role: 'assistant', content: botResponse });
-    if (cachedContext.length > 3) {
-      cachedContext = cachedContext.slice(-3);
+    if (cachedContext.length > 1) {
+      cachedContext = cachedContext.slice(-1);
     }
 
     await cache.setCache(mainKey, userCache, 450);
@@ -262,8 +262,8 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       ],
     });
 
-    if (cachedContext.length > 3) {
-      cachedContext = cachedContext.slice(-3);
+    if (cachedContext.length > 1) {
+      cachedContext = cachedContext.slice(-1);
     }
 
     // Отправляем запрос в OpenAI

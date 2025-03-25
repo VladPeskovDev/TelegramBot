@@ -16,6 +16,8 @@ const userRateLimiter = require('../utils/rateLimitConfig');
 
 const audioBotRouter = express.Router();
 
+
+
 audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) => {
   console.log('✅ Получен запрос на обработку аудио.');
 
@@ -112,7 +114,7 @@ audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) =>
     await cache.setCache(mainKey, userCache, 450);
     await cache.setCache(triggerKey, '1', 448);
 
-    // 📌 **Отправляем аудио в Whisper API**
+    // **Отправляем аудио в Whisper API**
     console.log('🎙 Отправка аудио в Whisper API...');
     const formData = new FormData();
     formData.append('file', fs.createReadStream(tempAudioFilePath));
@@ -154,8 +156,8 @@ audioBotRouter.route('/process-audio').post(userRateLimiter, async (req, res) =>
 
     // Сохраняем контекст
     cachedContext.push({ role: 'assistant', content: botResponse });
-    if (cachedContext.length > 3) {
-      cachedContext = cachedContext.slice(-3);
+    if (cachedContext.length > 0) {
+      cachedContext = cachedContext.slice(-0);
     }
 
     await cache.setCache(contextKey, cachedContext, 450);

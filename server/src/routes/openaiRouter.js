@@ -15,8 +15,6 @@ require('dotenv').config();
 */
 
 
-
-
 openaiRouter.route('/model_gpt-4o-mini').post(userRateLimiter, async (req, res) => {
   const { chatId, userMessage } = req.body;
 
@@ -399,7 +397,7 @@ openaiRouter.route('/o3-mini').post(userRateLimiter, async (req, res) => {
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: userContext,
-      max_completion_tokens: 1250,
+      max_completion_tokens: 8000,
     });
 
     //console.log('[DEBUG] O3-mini raw response:', JSON.stringify(response, null, 2));
@@ -422,7 +420,7 @@ openaiRouter.route('/o3-mini').post(userRateLimiter, async (req, res) => {
 
     res.json({ reply: botResponse });
   } catch (error) {
-    console.error('❌ Ошибка при обработке сообщения (model3.5):', error.message);
+    console.error('❌ Ошибка при обработке сообщения (modelo3):', error.message);
     res.status(500).json({ error: error.message || 'Ошибка на сервере. Попробуйте позже.' });
   }
 });
