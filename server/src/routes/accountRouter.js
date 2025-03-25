@@ -70,6 +70,7 @@ accountRouter.route('/').post(async (req, res) => {
     res.status(200).json({
       firstName: user.first_name,
       lastName: user.last_name,
+      telegramId: user.telegram_id,
       subscription: activeSubscription.subscription.name,
       endDate: formattedEndDate,
       models,

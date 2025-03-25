@@ -13,6 +13,7 @@ module.exports = (bot) => {
         👤 Ваш аккаунт:
         - Имя: ${accountInfo.firstName || 'Не указано'}
         - Фамилия: ${accountInfo.lastName || 'Не указано'}
+        - Telegram ID: ${accountInfo.telegramId}
         - Подписка: ${accountInfo.subscription || 'Нет подписки'}
         - Дата окончания подписки: ${accountInfo.endDate || 'Не указано'}
       `;
