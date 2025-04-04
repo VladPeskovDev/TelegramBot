@@ -645,7 +645,7 @@ audioBotRouter.route('/process-audio-GPT-o1').post(userRateLimiter, async (req, 
 
     fs.unlinkSync(tempAudioFilePath);
 
-    // GPT-o1 не поддерживает role: system, поэтому объединяем prompt и текст в user-сообщение
+    
     const mergedUserMessage = `${userPrompt || ''}\n\n${transcribedText}`.trim();
 
     cachedContext.push({
