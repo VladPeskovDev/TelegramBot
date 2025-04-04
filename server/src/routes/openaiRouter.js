@@ -425,6 +425,8 @@ openaiRouter.route('/o3-mini').post(userRateLimiter, async (req, res) => {
   }
 });
 
+/*  NUMEROLOG */
+
 openaiRouter.route('/numerologist').post(userRateLimiter, async (req, res) => {
   const { chatId, type, userMessage } = req.body;
 

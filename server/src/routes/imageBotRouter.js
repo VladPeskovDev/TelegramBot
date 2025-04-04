@@ -157,14 +157,15 @@ imageBotRouter.route('/process-image').post(userRateLimiter, async (req, res) =>
   }
 });
 
-
 //ENDPOINT DESKTOP
 
 imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req, res) => {
   const { chatId, base64Image, userMessage } = req.body;
 
   if (!chatId || !base64Image) {
-    return res.status(400).json({ error: 'Отсутствуют обязательные параметры (chatId, base64Image).' });
+    return res
+      .status(400)
+      .json({ error: 'Отсутствуют обязательные параметры (chatId, base64Image).' });
   }
 
   const mainKey = `user_${chatId}_imageProcess_model6`;
@@ -178,7 +179,9 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
     if (!userCache) {
       const user = await User.findOne({ where: { telegram_id: chatId } });
       if (!user) {
-        return res.status(403).json({ error: 'Пользователь не зарегистрирован. Используйте /start в Telegram.' });
+        return res
+          .status(403)
+          .json({ error: 'Пользователь не зарегистрирован. Используйте /start в Telegram.' });
       }
 
       const activeSubscription = await UserSubscription.findOne({
@@ -188,7 +191,9 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       });
 
       if (!activeSubscription || new Date(activeSubscription.end_date) < new Date()) {
-        return res.status(403).json({ error: 'Нет активной подписки. Пожалуйста, оформите подписку.' });
+        return res
+          .status(403)
+          .json({ error: 'Нет активной подписки. Пожалуйста, оформите подписку.' });
       }
 
       const subscriptionLimit = await SubscriptionModelLimit.findOne({
@@ -246,7 +251,7 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
       : `Реши задачу по коду с изображения:\n\n${extractedText}`;
 
     cachedContext.push({ role: 'user', content: prompt });
-    
+
     if (cachedContext.length > 1) {
       cachedContext = cachedContext.slice(-1);
     }
@@ -254,7 +259,7 @@ imageBotRouter.route('/external/image-process').post(userRateLimiter, async (req
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-2024-11-20',
       messages: cachedContext,
-      max_completion_tokens: 1200,
+      max_completion_tokens: 1750,
       temperature: 0.7,
     });
 

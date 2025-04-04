@@ -28,7 +28,7 @@ app.use('/api/robokassa', paymentRouter);
 app.use('/api/imagebot', imageBotRouter);
 app.use('/api/audiobot', audioBotRouter);
 
-cron.schedule('31 0,1,12 * * *', subscription); //33:00 (запуск в 03:33, 04:33, 15:33)
+cron.schedule('31 0,1,12 * * *', subscription); //33:00 (запуск в 03:31, 04:31, 15:31)
 
 
 // WebHook 
